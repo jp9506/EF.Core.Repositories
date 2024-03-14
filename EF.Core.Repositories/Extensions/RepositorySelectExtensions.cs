@@ -6,11 +6,47 @@ namespace EF.Core.Repositories.Extensions
 {
     public static class RepositorySelectExtensions
     {
+        /// <summary>
+        /// Projects each element of a repository into a new form.
+        /// </summary>
+        /// <typeparam name="TSource">The type of the elements of <paramref name="repository"/>.</typeparam>
+        /// <typeparam name="TResult">
+        /// The type of the value returned by the function represented by selector.
+        /// </typeparam>
+        /// <param name="repository">An <see cref="IReadOnlyRepository{T}"/> to project.</param>
+        /// <param name="selector">A projection function to apply to each element.</param>
+        /// <returns>
+        /// An <see cref="IReadOnlyRepository{T}"/> whose elements are the result of invoking a
+        /// projection function on each element of <paramref name="repository"/>.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="repository"/> or <paramref name="selector"/> is <see langword="null"/>.
+        /// </exception>
         public static IReadOnlyRepository<TResult> Select<TSource, TResult>(this IReadOnlyRepository<TSource> repository, Expression<Func<TSource, TResult>> selector)
         {
             return new SelectRepository<TSource, TResult>(repository, selector);
         }
 
+        /// <summary>
+        /// Projects each element of a repository into a new form. Each element's index is used in
+        /// the logic of the projection function.
+        /// </summary>
+        /// <typeparam name="TSource">The type of the elements of <paramref name="repository"/>.</typeparam>
+        /// <typeparam name="TResult">
+        /// The type of the value returned by the function represented by selector.
+        /// </typeparam>
+        /// <param name="repository">An <see cref="IReadOnlyRepository{T}"/> to project.</param>
+        /// <param name="selector">
+        /// A projection function to apply to each element; the second parameter of the function
+        /// represents the index of the element in the <paramref name="repository"/>.
+        /// </param>
+        /// <returns>
+        /// An <see cref="IReadOnlyRepository{T}"/> whose elements are the result of invoking a
+        /// projection function on each element of <paramref name="repository"/>.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="repository"/> or <paramref name="selector"/> is <see langword="null"/>.
+        /// </exception>
         public static IReadOnlyRepository<TResult> Select<TSource, TResult>(this IReadOnlyRepository<TSource> repository, Expression<Func<TSource, int, TResult>> selector)
         {
             return new SelectRepository<TSource, TResult>(repository, selector);

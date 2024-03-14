@@ -6,11 +6,49 @@ namespace EF.Core.Repositories.Extensions
 {
     public static class RepositorySelectManyExtensions
     {
+        /// <summary>
+        /// Projects each element of a repository to an <see cref="IEnumerable{T}"/> and combines
+        /// the results into one <see cref="IReadOnlyRepository{T}"/>.
+        /// </summary>
+        /// <typeparam name="TSource">The type of the elements of <paramref name="repository"/>.</typeparam>
+        /// <typeparam name="TResult">
+        /// The type of the elements of the sequence returned by the function represented by selector.
+        /// </typeparam>
+        /// <param name="repository">An <see cref="IReadOnlyRepository{T}"/> to project.</param>
+        /// <param name="selector">A projection function to apply to each element.</param>
+        /// <returns>
+        /// An <see cref="IReadOnlyRepository{T}"/> whose elements are the result of invoking a
+        /// one-to-many projection function on each element of <paramref name="repository"/>.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="repository"/> or <paramref name="selector"/> is <see langword="null"/>.
+        /// </exception>
         public static IReadOnlyRepository<TResult> SelectMany<TSource, TResult>(this IReadOnlyRepository<TSource> repository, Expression<Func<TSource, IEnumerable<TResult>>> selector)
         {
             return new SelectManyRepository<TSource, TResult>(repository, selector);
         }
 
+        /// <summary>
+        /// Projects each element of a repository to an <see cref="IEnumerable{T}"/> and combines
+        /// the results into one <see cref="IReadOnlyRepository{T}"/>. Each element's index is used
+        /// in the logic of the projection function.
+        /// </summary>
+        /// <typeparam name="TSource">The type of the elements of <paramref name="repository"/>.</typeparam>
+        /// <typeparam name="TResult">
+        /// The type of the elements of the sequence returned by the function represented by selector.
+        /// </typeparam>
+        /// <param name="repository">An <see cref="IReadOnlyRepository{T}"/> to project.</param>
+        /// <param name="selector">
+        /// A projection function to apply to each element; the second parameter of this function
+        /// represents the index of the element in the <paramref name="repository"/>.
+        /// </param>
+        /// <returns>
+        /// An <see cref="IReadOnlyRepository{T}"/> whose elements are the result of invoking a
+        /// one-to-many projection function on each element of <paramref name="repository"/>.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="repository"/> or <paramref name="selector"/> is <see langword="null"/>.
+        /// </exception>
         public static IReadOnlyRepository<TResult> SelectMany<TSource, TResult>(this IReadOnlyRepository<TSource> repository, Expression<Func<TSource, int, IEnumerable<TResult>>> selector)
         {
             return new SelectManyRepository<TSource, TResult>(repository, selector);

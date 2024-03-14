@@ -8,6 +8,24 @@ namespace EF.Core.Repositories.Extensions
 {
     public static class RepositoryIncludeExtensions
     {
+        /// <summary>
+        /// Specifies related entities to include in the <see cref="IRepository{T}"/>. The
+        /// navigation property to be included is specified starting with the type of entity being
+        /// queried. If you wish to include additional types based on the navigation properties of
+        /// the type being included, then chain a call to <see
+        /// cref="RepositoryThenIncludeExtensions.ThenInclude{TEntity, TPrevProp,
+        /// TProp}(IIncludeRepository{TEntity, TPrevProp}, Expression{Func{TPrevProp,
+        /// ICollection{TProp}}})"/> after this call.
+        /// </summary>
+        /// <typeparam name="TEntity">The type of entity being queried.</typeparam>
+        /// <typeparam name="TProp">The type of the related entity to be included.</typeparam>
+        /// <param name="repository">The source <see cref="IRepository{T}"/></param>
+        /// <param name="expression">
+        /// A lambda expression representing the navigation property to be included (t =&gt; t.Property1).
+        /// </param>
+        /// <returns>
+        /// An <see cref="IIncludeRepository{TEntity, TProp}"/> with the related data included.
+        /// </returns>
         public static IIncludeRepository<TEntity, TProp> Include<TEntity, TProp>(this IRepository<TEntity> repository, Expression<Func<TEntity, ICollection<TProp>>> expression)
             where TEntity : class
             where TProp : class?
@@ -15,6 +33,24 @@ namespace EF.Core.Repositories.Extensions
             return new IncludeCollectionRepository<TEntity, TProp>(repository, expression);
         }
 
+        /// <summary>
+        /// Specifies related entities to include in the <see cref="IRepository{T}"/>. The
+        /// navigation property to be included is specified starting with the type of entity being
+        /// queried. If you wish to include additional types based on the navigation properties of
+        /// the type being included, then chain a call to <see
+        /// cref="RepositoryThenIncludeExtensions.ThenInclude{TEntity, TPrevProp,
+        /// TProp}(IIncludeRepository{TEntity, TPrevProp}, Expression{Func{TPrevProp,
+        /// ICollection{TProp}}})"/> after this call.
+        /// </summary>
+        /// <typeparam name="TEntity">The type of entity being queried.</typeparam>
+        /// <typeparam name="TProp">The type of the related entity to be included.</typeparam>
+        /// <param name="repository">The source <see cref="IRepository{T}"/></param>
+        /// <param name="expression">
+        /// A lambda expression representing the navigation property to be included (t =&gt; t.Property1).
+        /// </param>
+        /// <returns>
+        /// An <see cref="IIncludeRepository{TEntity, TProp}"/> with the related data included.
+        /// </returns>
         public static IIncludeRepository<TEntity, TProp> Include<TEntity, TProp>(this IRepository<TEntity> repository, Expression<Func<TEntity, TProp>> expression)
             where TEntity : class
             where TProp : class?

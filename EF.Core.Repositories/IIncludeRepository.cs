@@ -3,6 +3,11 @@ using Microsoft.EntityFrameworkCore.Query;
 
 namespace EF.Core.Repositories
 {
+    /// <summary>
+    /// Supports <see cref="IRepository{T}"/> Include/ThenInclude chaining operators.
+    /// </summary>
+    /// <typeparam name="TEntity">The entity type.</typeparam>
+    /// <typeparam name="TProp">The property type.</typeparam>
     public interface IIncludeRepository<TEntity, TProp> : IRepository<TEntity>
         where TEntity : class
         where TProp : class?
