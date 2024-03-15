@@ -39,7 +39,7 @@ namespace EF.Core.Repositories.Extensions
         {
             return services
                 .AddDbContextFactory<TContext>(optionsAction)
-                .AddScoped<IRepositoryFactory<TContext>, RepositoryFactory<TContext>>();
+                .AddSingleton<IRepositoryFactory<TContext>, RepositoryFactory<TContext>>();
         }
     }
 }
