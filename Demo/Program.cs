@@ -56,7 +56,7 @@ internal class Program
             .Include(x => x.Roles)
             .UpdateAsync(u);
 
-        // All Standard IEnumerable LINQ Extenstions implemented
+        // All Standard IEnumerable LINQ Extensions implemented
         _ = await userRepository
             .Include(x => x.Roles)
             .Where(x => x.Roles.Any(r => r.Id == 2))
@@ -65,6 +65,8 @@ internal class Program
         _ = await userRepository
             .OrderBy(x => x.LastName)
             .GetAsync();
+
+        _ = userRepository.Take(1);
     }
 
     private static void Main(string[] args)
