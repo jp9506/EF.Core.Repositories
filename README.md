@@ -16,7 +16,7 @@ $ dotnet add package EF.Core.Repositories
 ## Getting Started
 The Repository Factory can be registered by calling ConfigureData() extension.
 
-The Action<DbContextOptionsBuilder> will be passed to AddDbContextFactory() extension provided by Entity Framework Core.
+The Action&lt;DbContextOptionsBuilder&gt; will be passed to AddDbContextFactory() extension provided by Entity Framework Core.
 
 *Note* Due to the support for multiple asynchronous actions being executed against one or more repositories, multiple contexts may be created, and leveraging a DbContextFactory is required.
 ```csharp
@@ -24,6 +24,7 @@ using EF.Core.Repositories;
 ...
 services.ConfigureData<TContext>(opt => ...);
 ```
+
 Within a Service/Controller/etc.
 ```csharp
 public class Consumer
@@ -113,13 +114,9 @@ var users = await repository.GetAsync();
 IRepository has all the async extensions available to IReadOnlyRepository and adds the following.
 - DeleteAsync(entity)
 - DeleteByIdAsync(key)
-- DeleteRangeAsync(entities)
-- DeleteRangeByIdAsync(keys)
 - GetAsync(key)
 - InsertAsync(entity)
-- InsertRangeAsync(entities)
 - UpdateAsync(entity)
-- UpdateRangeAsync(entities)
 
 #### GetAsync(key) and DeleteByIdAsync(key)
 These functions allow you to retreive/remove an entity based upon primary key data.

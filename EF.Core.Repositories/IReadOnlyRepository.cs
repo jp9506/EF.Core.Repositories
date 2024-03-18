@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace EF.Core.Repositories
 {
@@ -12,7 +13,7 @@ namespace EF.Core.Repositories
 
     internal interface IInternalReadOnlyRepository<T> : IReadOnlyRepository<T>
     {
-        IRepositoryFactory Factory { get; }
+        IInternalTransaction Transaction { get; }
 
         IQueryable<T> EntityQuery(DbContext context);
     }

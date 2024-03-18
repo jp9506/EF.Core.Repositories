@@ -1,5 +1,8 @@
 ﻿using EF.Core.Repositories.Internal.Base;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace EF.Core.Repositories.Internal
 {
@@ -13,12 +16,17 @@ namespace EF.Core.Repositories.Internal
             _contextFactory = contextFactory;
         }
 
-        async Task<DbContext> IRepositoryFactory.CreateDbContextAsync(CancellationToken cancellationToken)
+        public ITransaction CreateTransaction()
         {
-            return await CreateDbContextAsync(cancellationToken);
+            return new Transaction(this);
         }
 
-        public async Task<TContext> CreateDbContextAsync(CancellationToken cancellationToken = default)
+        async Task<DbContext> IRepositoryFactory.GetDbContextAsync(CancellationToken cancellationToken)
+        {
+            return await GetDbContextAsync(cancellationToken);
+        }
+
+        public async Task<TContext> GetDbContextAsync(CancellationToken cancellationToken = default)
         {
             return await _contextFactory.CreateDbContextAsync(cancellationToken);
         }
@@ -26,35 +34,40 @@ namespace EF.Core.Repositories.Internal
         public IReadOnlyRepository<T> GetReadOnlyRepository<T>()
             where T : class
         {
-            return new ReadOnlyRepository<T>(this);
+            var transaction = new AutoTransaction(this);
+            return transaction.GetReadOnlyRepository<T>();
         }
 
         public IRepository<T> GetRepository<T>()
-                    where T : class
-        {
-            return new Repository<T>(this);
-        }
-
-        private sealed class ReadOnlyRepository<T> : ReadOnlyRepositoryBase<T>
             where T : class
         {
-            public ReadOnlyRepository(IRepositoryFactory factory) : base(factory)
-            {
-            }
-
-            public override IQueryable<T> EntityQuery(DbContext context) => context.Set<T>().AsQueryable();
+            var transaction = new AutoTransaction(this);
+            return transaction.GetRepository<T>();
         }
 
-        private sealed class Repository<T> : RepositoryBase<T>
-                    where T : class
+        private sealed class AutoTransaction : TransactionBase
         {
-            public Repository(IRepositoryFactory factory) : base(factory)
+            public AutoTransaction(IRepositoryFactory factory) : base(factory)
             {
             }
 
-            public override IQueryable<T> EntityQuery(DbContext context) => context.Set<T>().AsQueryable();
+            public override bool AutoCommit => true;
 
-            public override Task HandleExpressionUpdateAsync(DbContext context, T current, T entity, CancellationToken cancellationToken = default) => Task.CompletedTask;
+            public override async Task<IEnumerable<object>> CommitAsync(CancellationToken cancellationToken = default)
+            {
+                var res = await base.CommitAsync(cancellationToken);
+                Dispose();
+                return res;
+            }
+        }
+
+        private sealed class Transaction : TransactionBase
+        {
+            public Transaction(IRepositoryFactory factory) : base(factory)
+            {
+            }
+
+            public override bool AutoCommit => false;
         }
     }
 }

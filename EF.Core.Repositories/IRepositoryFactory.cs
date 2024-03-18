@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace EF.Core.Repositories
 {
@@ -7,6 +9,12 @@ namespace EF.Core.Repositories
     /// </summary>
     public interface IRepositoryFactory
     {
+        /// <summary>
+        /// Creates a new <see cref="ITransaction"/>.
+        /// </summary>
+        /// <returns>The created <see cref="ITransaction"/>.</returns>
+        ITransaction CreateTransaction();
+
         /// <summary>
         /// Creates a new <see cref="DbContext"/> instance in an async context.
         /// </summary>
@@ -19,7 +27,21 @@ namespace EF.Core.Repositories
         /// <exception cref="OperationCanceledException">
         /// If the <see cref="CancellationToken"/> is canceled.
         /// </exception>
-        Task<DbContext> CreateDbContextAsync(CancellationToken cancellationToken = default);
+        Task<DbContext> GetDbContextAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Gets a readonly repository for accessing data of type <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">The type of data in the repository.</typeparam>
+        /// <returns>An <see cref="IReadOnlyRepository{T}"/>.</returns>
+        IReadOnlyRepository<T> GetReadOnlyRepository<T>() where T : class;
+
+        /// <summary>
+        /// Gets a read/write repository for accessing/updating data of type <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">The type of data in the repository.</typeparam>
+        /// <returns>An <see cref="IRepository{T}"/>.</returns>
+        IRepository<T> GetRepository<T>() where T : class;
     }
 
     /// <summary>
@@ -43,20 +65,6 @@ namespace EF.Core.Repositories
         /// <exception cref="OperationCanceledException">
         /// If the <see cref="CancellationToken"/> is canceled.
         /// </exception>
-        new Task<TContext> CreateDbContextAsync(CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Gets a readonly repository for accessing data of type <typeparamref name="T"/>.
-        /// </summary>
-        /// <typeparam name="T">The type of data in the repository.</typeparam>
-        /// <returns>An <see cref="IReadOnlyRepository{T}"/>.</returns>
-        IReadOnlyRepository<T> GetReadOnlyRepository<T>() where T : class;
-
-        /// <summary>
-        /// Gets a read/write repository for accessing/updating data of type <typeparamref name="T"/>.
-        /// </summary>
-        /// <typeparam name="T">The type of data in the repository.</typeparam>
-        /// <returns>An <see cref="IRepository{T}"/>.</returns>
-        IRepository<T> GetRepository<T>() where T : class;
+        new Task<TContext> GetDbContextAsync(CancellationToken cancellationToken = default);
     }
 }

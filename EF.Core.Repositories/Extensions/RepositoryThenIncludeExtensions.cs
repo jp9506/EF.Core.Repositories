@@ -2,7 +2,12 @@
 using EF.Core.Repositories.Internal.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 #pragma warning disable S2436 // Types and methods should not have too many generic parameters
 

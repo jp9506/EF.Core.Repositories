@@ -1,11 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace EF.Core.Repositories.Internal.Base
 {
     internal abstract class RepositoryBase<T> : ReadOnlyRepositoryBase<T>, IInternalRepository<T>
         where T : class
     {
-        protected RepositoryBase(IRepositoryFactory factory) : base(factory)
+        protected RepositoryBase(IInternalTransaction transaction) : base(transaction)
         {
         }
 
