@@ -52,13 +52,6 @@ namespace EF.Core.Repositories.Internal
             }
 
             public override bool AutoCommit => true;
-
-            public override async Task<IEnumerable<object>> CommitAsync(CancellationToken cancellationToken = default)
-            {
-                var res = await base.CommitAsync(cancellationToken);
-                Dispose();
-                return res;
-            }
         }
 
         private sealed class Transaction : TransactionBase
