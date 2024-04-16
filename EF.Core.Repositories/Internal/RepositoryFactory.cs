@@ -1,6 +1,4 @@
-﻿using EF.Core.Repositories.Internal.Base;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
+﻿using Microsoft.EntityFrameworkCore;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,15 +8,17 @@ namespace EF.Core.Repositories.Internal
         where TContext : DbContext
     {
         private readonly IDbContextFactory<TContext> _contextFactory;
+        private bool disposedValue;
 
         public RepositoryFactory(IDbContextFactory<TContext> contextFactory)
         {
             _contextFactory = contextFactory;
         }
 
-        public ITransaction CreateTransaction()
+        public void Dispose()
         {
-            return new Transaction(this);
+            Dispose(disposing: true);
+            System.GC.SuppressFinalize(this);
         }
 
         async Task<DbContext> IRepositoryFactory.GetDbContextAsync(CancellationToken cancellationToken)
@@ -31,36 +31,17 @@ namespace EF.Core.Repositories.Internal
             return await _contextFactory.CreateDbContextAsync(cancellationToken);
         }
 
-        public IReadOnlyRepository<T> GetReadOnlyRepository<T>()
-            where T : class
+        protected virtual void Dispose(bool disposing)
         {
-            var transaction = new AutoTransaction(this);
-            return transaction.GetReadOnlyRepository<T>();
-        }
-
-        public IRepository<T> GetRepository<T>()
-            where T : class
-        {
-            var transaction = new AutoTransaction(this);
-            return transaction.GetRepository<T>();
-        }
-
-        private sealed class AutoTransaction : TransactionBase
-        {
-            public AutoTransaction(IRepositoryFactory factory) : base(factory)
+            if (!disposedValue)
             {
+                if (disposing)
+                {
+                    // TODO: dispose managed state (managed objects)
+                }
+
+                disposedValue = true;
             }
-
-            public override bool AutoCommit => true;
-        }
-
-        private sealed class Transaction : TransactionBase
-        {
-            public Transaction(IRepositoryFactory factory) : base(factory)
-            {
-            }
-
-            public override bool AutoCommit => false;
         }
     }
 }

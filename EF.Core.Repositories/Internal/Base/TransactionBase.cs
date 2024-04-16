@@ -11,7 +11,7 @@ namespace EF.Core.Repositories.Internal.Base
     {
         private readonly IRepositoryFactory _factory;
 
-        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _semaphore = new(1, 1);
         private bool disposedValue;
 
         public TransactionBase(IRepositoryFactory factory)
@@ -36,7 +36,7 @@ namespace EF.Core.Repositories.Internal.Base
                             x.State == EntityState.Added ||
                             x.State == EntityState.Modified)
                         .Select(x => x.Entity).ToArray();
-                    var count = await DbContext.SaveChangesAsync();
+                    var count = await DbContext.SaveChangesAsync(cancellationToken);
                     if (count > 0)
                         return entities;
                 }

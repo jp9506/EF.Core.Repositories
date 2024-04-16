@@ -51,7 +51,7 @@ namespace EF.Core.Repositories.Extensions
                 {
                     var ctx = await t.GetDbContextAsync(cancellationToken);
                     return await r.GetAsync(ctx, key, cancellationToken);
-                }, cancellationToken);
+                });
 
         private static async Task<T?> GetAsync<T>(this IInternalRepository<T> repository, DbContext context, object key, CancellationToken cancellationToken = default) where T : class
             => await new ContextQueryable<T>(repository.EntityQuery(context), context).FindAsync(key, cancellationToken);
@@ -97,7 +97,7 @@ namespace EF.Core.Repositories.Extensions
                     return res.Any();
                 }
                 return true;
-            }, cancellationToken);
+            });
 
         /// <summary>
         /// Delete an entity from a repository based upon the specified key.
@@ -147,7 +147,7 @@ namespace EF.Core.Repositories.Extensions
                     return res.Any();
                 }
                 return true;
-            }, cancellationToken);
+            });
 
         #endregion Delete
 
@@ -190,7 +190,7 @@ namespace EF.Core.Repositories.Extensions
                     return res.Any() ? current : default;
                 }
                 return current;
-            }, cancellationToken);
+            });
 
         #endregion Update
 
@@ -230,13 +230,13 @@ namespace EF.Core.Repositories.Extensions
                     return res.Any() ? e.Entity : default;
                 }
                 return e.Entity;
-            }, cancellationToken);
+            });
 
         #endregion Insert
 
         #region Execute
 
-        private static async Task<TResult> ExecuteAsync<T, TResult>(this IInternalRepository<T> repository, Func<IInternalRepository<T>, IInternalTransaction, Task<TResult>> expression, CancellationToken cancellationToken = default)
+        private static async Task<TResult> ExecuteAsync<T, TResult>(this IInternalRepository<T> repository, Func<IInternalRepository<T>, IInternalTransaction, Task<TResult>> expression)
             where T : class
         {
             return await expression(repository, repository.Transaction);

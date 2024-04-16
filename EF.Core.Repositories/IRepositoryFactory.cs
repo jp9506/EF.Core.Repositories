@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -7,14 +8,8 @@ namespace EF.Core.Repositories
     /// <summary>
     /// A factory for creating <see cref="IRepository{T}"/>.
     /// </summary>
-    public interface IRepositoryFactory
+    public interface IRepositoryFactory : IDisposable
     {
-        /// <summary>
-        /// Creates a new <see cref="ITransaction"/>.
-        /// </summary>
-        /// <returns>The created <see cref="ITransaction"/>.</returns>
-        ITransaction CreateTransaction();
-
         /// <summary>
         /// Creates a new <see cref="DbContext"/> instance in an async context.
         /// </summary>
@@ -28,20 +23,6 @@ namespace EF.Core.Repositories
         /// If the <see cref="CancellationToken"/> is canceled.
         /// </exception>
         Task<DbContext> GetDbContextAsync(CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Gets a readonly repository for accessing data of type <typeparamref name="T"/>.
-        /// </summary>
-        /// <typeparam name="T">The type of data in the repository.</typeparam>
-        /// <returns>An <see cref="IReadOnlyRepository{T}"/>.</returns>
-        IReadOnlyRepository<T> GetReadOnlyRepository<T>() where T : class;
-
-        /// <summary>
-        /// Gets a read/write repository for accessing/updating data of type <typeparamref name="T"/>.
-        /// </summary>
-        /// <typeparam name="T">The type of data in the repository.</typeparam>
-        /// <returns>An <see cref="IRepository{T}"/>.</returns>
-        IRepository<T> GetRepository<T>() where T : class;
     }
 
     /// <summary>

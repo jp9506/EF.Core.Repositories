@@ -1,6 +1,5 @@
 ﻿using EF.Core.Repositories.Extensions;
 using EF.Core.Repositories.Test.Sqlite.Data;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 
@@ -9,13 +8,11 @@ namespace EF.Core.Repositories.Test.Sqlite
     public class GetAsync
     {
         private const int USER_COUNT = 21;
-        private readonly IRepositoryFactory<TestContext> _repositoryFactory;
+        private readonly IFactoryBuilder<TestContext> _builder;
 
-        public GetAsync(IRepositoryFactory<TestContext> repositoryFactory, IDbContextFactory<TestContext> contextFactory)
+        public GetAsync()
         {
-            _repositoryFactory = repositoryFactory;
-            using var context = contextFactory.CreateDbContext();
-            if (context.Database.EnsureCreated())
+            _builder = new SqliteFactoryBuilder<TestContext>(context =>
             {
                 context.Users.Add(new User
                 {
@@ -34,14 +31,15 @@ namespace EF.Core.Repositories.Test.Sqlite
                         SupervisorId = null,
                     });
                 }
-                context.SaveChanges();
-            }
+            });
         }
 
         [Fact]
         public async void GetAllAsync()
         {
-            var repo = _repositoryFactory.GetRepository<User>();
+            var factory = await _builder.CreateFactoryAsync();
+
+            var repo = factory.GetRepository<User>();
 
             var users = await repo.GetAsync();
 
@@ -52,7 +50,9 @@ namespace EF.Core.Repositories.Test.Sqlite
         [Fact]
         public async void GetByIdAsync()
         {
-            var repo = _repositoryFactory.GetRepository<User>();
+            var factory = await _builder.CreateFactoryAsync();
+
+            var repo = factory.GetRepository<User>();
 
             var user = await repo.GetAsync(new { Id = new Guid("12345678-1234-1234-1234-1234567890AB") });
 

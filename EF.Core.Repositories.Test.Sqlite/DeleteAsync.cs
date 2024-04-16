@@ -1,6 +1,5 @@
 ﻿using EF.Core.Repositories.Extensions;
 using EF.Core.Repositories.Test.Sqlite.Data;
-using Microsoft.EntityFrameworkCore;
 using System;
 
 namespace EF.Core.Repositories.Test.Sqlite
@@ -8,13 +7,11 @@ namespace EF.Core.Repositories.Test.Sqlite
     public class DeleteAsync
     {
         private const int USER_COUNT = 21;
-        private readonly IRepositoryFactory<TestContext> _repositoryFactory;
+        private readonly IFactoryBuilder<TestContext> _builder;
 
-        public DeleteAsync(IRepositoryFactory<TestContext> repositoryFactory, IDbContextFactory<TestContext> contextFactory)
+        public DeleteAsync()
         {
-            _repositoryFactory = repositoryFactory;
-            using var context = contextFactory.CreateDbContext();
-            if (context.Database.EnsureCreated())
+            _builder = new SqliteFactoryBuilder<TestContext>(context =>
             {
                 context.Users.Add(new User
                 {
@@ -33,13 +30,14 @@ namespace EF.Core.Repositories.Test.Sqlite
                         SupervisorId = null,
                     });
                 }
-                context.SaveChanges();
-            }
+            });
         }
 
         [Fact]
         public async void DeleteByIdAsync()
         {
+            var factory = await _builder.CreateFactoryAsync();
+
             var user = new User
             {
                 Email = "test@test.com",
@@ -47,22 +45,20 @@ namespace EF.Core.Repositories.Test.Sqlite
                 Name = "Test Test",
                 SupervisorId = null,
             };
-            var repo = _repositoryFactory.GetRepository<User>();
+            var repo = factory.GetRepository<User>();
 
-            var res = await repo.DeleteByIdAsync(new { Id = user.Id });
+            var res = await repo.DeleteByIdAsync(new { user.Id });
+            var u = await repo.GetAsync(new { user.Id });
 
             Assert.True(res);
-            if (res)
-            {
-                var insertres = await repo.InsertAsync(user);
-                var u = await repo.GetAsync(new { Id = user.Id });
-                Assert.NotNull(u);
-            }
+            Assert.Null(u);
         }
 
         [Fact]
         public async void DeleteEntityAsync()
         {
+            var factory = await _builder.CreateFactoryAsync();
+
             var user = new User
             {
                 Email = "test@test.com",
@@ -70,13 +66,13 @@ namespace EF.Core.Repositories.Test.Sqlite
                 Name = "Test Test",
                 SupervisorId = null,
             };
-            var repo = _repositoryFactory.GetRepository<User>();
+            var repo = factory.GetRepository<User>();
 
             var res = await repo.DeleteAsync(user);
+            var u = await repo.GetAsync(new { user.Id });
 
             Assert.True(res);
-            if (res)
-                await repo.InsertAsync(user);
+            Assert.Null(u);
         }
     }
 }
