@@ -16,17 +16,17 @@ namespace EF.Core.Repositories.Test.Sql
     {
         private readonly SqlConnectionStringBuilder _builder;
 
-        public SqlFactoryBuilder(SqlConnectionStringBuilder builder, Action<TContext> contextAction) : base(contextAction)
+        public SqlFactoryBuilder(SqlConnectionStringBuilder builder, Func<IEnumerable<object>> entityFunction) : base(entityFunction)
         {
             _builder = builder;
         }
 
-        public SqlFactoryBuilder(SqlConnectionStringBuilder builder, Func<TContext, Task> contextAction) : base(contextAction)
+        public SqlFactoryBuilder(SqlConnectionStringBuilder builder, Func<Task<IEnumerable<object>>> entityFunction) : base(entityFunction)
         {
             _builder = builder;
         }
 
-        public SqlFactoryBuilder(SqlConnectionStringBuilder builder, Func<TContext, CancellationToken, Task> contextAction) : base(contextAction)
+        public SqlFactoryBuilder(SqlConnectionStringBuilder builder, Func<CancellationToken, Task<IEnumerable<object>>> entityFunction) : base(entityFunction)
         {
             _builder = builder;
         }
@@ -37,30 +37,10 @@ namespace EF.Core.Repositories.Test.Sql
             using var context = await factory.GetDbContextAsync(cancellationToken);
             await context.Database.EnsureDeletedAsync(cancellationToken);
             await context.Database.EnsureCreatedAsync(cancellationToken);
-            await _contextAction(context, cancellationToken);
-            await SaveChangesAsync(factory, context.ChangeTracker.Entries(), cancellationToken);
+            await context.SeedDataAsync(await _entityFunction(cancellationToken), cancellationToken);
             return factory;
         }
 
         protected override IRepositoryFactory<TContext> GetFactory() => new SqlRepositoryFactory<TContext>(_builder);
-
-        private async Task SaveChangesAsync(IRepositoryFactory<TContext> factory, IEnumerable<EntityEntry> source, CancellationToken cancellationToken)
-        {
-            var data = source.GroupBy(x => x.Metadata);
-            using var context = await factory.GetDbContextAsync(cancellationToken);
-            await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
-            await context.DisableForeignKeyContraintsAsync(cancellationToken);
-            foreach (var set in data)
-            {
-                await context.EnableIdentityInsertAsync(set.Key, cancellationToken);
-                foreach (var e in set)
-                {
-                    await context.InsertEntityAsync(e, cancellationToken);
-                }
-                await context.DisableIdentityInsertAsync(set.Key, cancellationToken);
-            }
-            await context.EnableForeignKeyContraintsAsync(cancellationToken);
-            await transaction.CommitAsync(cancellationToken);
-        }
     }
 }

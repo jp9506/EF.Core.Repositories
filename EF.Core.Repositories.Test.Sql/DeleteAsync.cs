@@ -1,6 +1,7 @@
 ﻿using EF.Core.Repositories.Extensions;
 using EF.Core.Repositories.Test.Sql.Data;
 using System;
+using System.Linq;
 
 namespace EF.Core.Repositories.Test.Sql
 {
@@ -13,26 +14,25 @@ namespace EF.Core.Repositories.Test.Sql
         public DeleteAsync()
         {
             _builder = IFactoryBuilder<TestContext>.Sql(Constants.CONNECTION_STRING,
-                context =>
-                {
-                    context.Users.Add(new User
-                    {
-                        Email = "test@test.com",
-                        Id = new Guid(USER_ID),
-                        Name = "Test Test",
-                        SupervisorId = null,
-                    });
-                    for (int i = 1; i < USER_COUNT; i++)
-                    {
-                        context.Users.Add(new User
+                () =>
+                    Enumerable.Range(1, USER_COUNT - 1)
+                        .Select(i => new User
                         {
                             Email = $"user-{i}@test.com",
                             Id = Guid.NewGuid(),
                             Name = $"User {i}",
                             SupervisorId = null,
-                        });
-                    }
-                });
+                        })
+                        .Union(new[]
+                        {
+                            new User
+                            {
+                                Email = "test@test.com",
+                                Id = new Guid(USER_ID),
+                                Name = "Test Test",
+                                SupervisorId = null,
+                            }
+                        }));
         }
 
         [Fact]

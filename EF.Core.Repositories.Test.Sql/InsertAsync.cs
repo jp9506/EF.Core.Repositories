@@ -13,15 +13,15 @@ namespace EF.Core.Repositories.Test.Sql
         public InsertAsync()
         {
             _builder = IFactoryBuilder<TestContext>.Sql(Constants.CONNECTION_STRING,
-                context =>
+                () => new[]
                 {
-                    context.Users.Add(new User
+                    new User
                     {
                         Email = "super@super.com",
                         Id = new Guid(SUPER_USER_ID),
                         Name = "Super Super",
                         SupervisorId = null,
-                    });
+                    },
                 });
         }
 

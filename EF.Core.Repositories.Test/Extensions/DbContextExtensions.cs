@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,6 +38,29 @@ namespace EF.Core.Repositories.Test.Extensions
                 sql,
                 parameters.Select(p => p.Value),
                 cancellationToken);
+        }
+
+        public static async Task SeedDataAsync(this DbContext context, IEnumerable<object> entities, CancellationToken cancellationToken = default)
+        {
+            await context.AddRangeAsync(entities, cancellationToken);
+            var data = context.ChangeTracker.Entries().GroupBy(x => x.Metadata);
+            await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
+            await context.DisableForeignKeyContraintsAsync(cancellationToken);
+            foreach (var set in data)
+            {
+                await context.EnableIdentityInsertAsync(set.Key, cancellationToken);
+                foreach (var e in set)
+                {
+                    await context.InsertEntityAsync(e, cancellationToken);
+                }
+                await context.DisableIdentityInsertAsync(set.Key, cancellationToken);
+            }
+            await context.EnableForeignKeyContraintsAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+            foreach (var e in context.ChangeTracker.Entries())
+            {
+                e.State = EntityState.Unchanged;
+            }
         }
 
         private static async Task SetForeignKeyConstraintsAsync(DbContext context, bool enable, CancellationToken cancellationToken)

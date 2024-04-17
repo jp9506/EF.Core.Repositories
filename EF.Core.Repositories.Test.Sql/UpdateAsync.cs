@@ -16,41 +16,44 @@ namespace EF.Core.Repositories.Test.Sql
         public UpdateAsync()
         {
             _builder = IFactoryBuilder<TestContext>.Sql(Constants.CONNECTION_STRING,
-                context =>
+                () => new object[]
                 {
-                    var classEntry = context.Classes.Add(new Class
-                    {
-                        Id = new Guid(CLASS_ID),
-                        Name = "Test Class",
-                    });
-                    context.Roles.Add(new Role
+                    new Role
                     {
                         Id = MANAGER_ROLE_ID,
                         Name = "Manager",
-                    });
-                    var userEntry = context.Users.Add(new User
+                    },
+                    new User
                     {
                         Email = "test@test.com",
                         Id = new Guid(USER_ID),
                         Name = "Test Test",
                         SupervisorId = null,
-                    });
-
-                    userEntry.Entity.Classes.Add(classEntry.Entity);
-
-                    context.Users.Add(new User
+                        Classes = new[]
+                        {
+                            new Class
+                            {
+                                Id = new Guid(CLASS_ID),
+                                Name = "Test Class",
+                            },
+                        }
+                    },
+                    new User
                     {
                         Email = "super@super.com",
                         Id = new Guid(SUPER_USER_ID),
                         Name = "Super Super",
                         SupervisorId = null,
-                    });
-                    context.UserRoles.Add(new UserRole
-                    {
-                        Expiration = null,
-                        RoleId = MANAGER_ROLE_ID,
-                        UserId = new Guid(SUPER_USER_ID),
-                    });
+                        UserRoles = new[]
+                        {
+                            new UserRole
+                            {
+                                Expiration = null,
+                                RoleId = MANAGER_ROLE_ID,
+                                UserId = new Guid(SUPER_USER_ID),
+                            },
+                        }
+                    }
                 });
         }
 

@@ -65,26 +65,24 @@ namespace EF.Core.Repositories.Test.Sql
         public GetAsync()
         {
             _builder = IFactoryBuilder<TestContext>.Sql(Constants.CONNECTION_STRING,
-                context =>
-                {
-                    context.Users.Add(new User
+                () =>
+                    Ids.Select((x, i) => new User
                     {
-                        Email = "test@test.com",
-                        Id = new Guid(USER_ID),
-                        Name = "Test Test",
+                        Email = $"user-{i}@test.com",
+                        Id = new Guid(x),
+                        Name = $"User {i}",
                         SupervisorId = null,
-                    });
-                    for (int i = 0; i < Ids.Length; i++)
+                    })
+                    .Union(new[]
                     {
-                        context.Users.Add(new User
+                        new User
                         {
-                            Email = $"user-{i}@test.com",
-                            Id = new Guid(Ids[i]),
-                            Name = $"User {i}",
+                            Email = "test@test.com",
+                            Id = new Guid(USER_ID),
+                            Name = "Test Test",
                             SupervisorId = null,
-                        });
-                    }
-                });
+                        }
+                    }));
         }
 
         [Fact]

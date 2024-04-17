@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -8,17 +9,17 @@ namespace EF.Core.Repositories.Test.Base
     internal abstract class FactoryBuilderBase<TContext> : IFactoryBuilder<TContext>
         where TContext : DbContext
     {
-        protected readonly Func<TContext, CancellationToken, Task> _contextAction;
+        protected readonly Func<CancellationToken, Task<IEnumerable<object>>> _entityFunction;
 
-        public FactoryBuilderBase(Action<TContext> contextAction) : this(async (ctx, token) => await Task.Run(() => contextAction(ctx), token))
+        public FactoryBuilderBase(Func<IEnumerable<object>> entityFunction) : this(async token => await Task.Run(() => entityFunction(), token))
         { }
 
-        public FactoryBuilderBase(Func<TContext, Task> contextAction) : this(async (ctx, _) => await contextAction(ctx))
+        public FactoryBuilderBase(Func<Task<IEnumerable<object>>> entityFunction) : this(async _ => await entityFunction())
         { }
 
-        public FactoryBuilderBase(Func<TContext, CancellationToken, Task> contextAction)
+        public FactoryBuilderBase(Func<CancellationToken, Task<IEnumerable<object>>> entityFunction)
         {
-            _contextAction = contextAction;
+            _entityFunction = entityFunction;
         }
 
         public virtual async Task<IRepositoryFactory<TContext>> CreateFactoryAsync(CancellationToken cancellationToken = default)
@@ -27,7 +28,7 @@ namespace EF.Core.Repositories.Test.Base
             using var context = await factory.GetDbContextAsync(cancellationToken);
             await context.Database.EnsureDeletedAsync(cancellationToken);
             await context.Database.EnsureCreatedAsync(cancellationToken);
-            await _contextAction(context, cancellationToken);
+            await context.AddRangeAsync(await _entityFunction(cancellationToken));
             await context.SaveChangesAsync(cancellationToken);
             return factory;
         }
