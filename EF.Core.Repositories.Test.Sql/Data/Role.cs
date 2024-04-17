@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace EF.Core.Repositories.Test.Sqlite.Data
+namespace EF.Core.Repositories.Test.Sql.Data
 {
     public class Role
     {

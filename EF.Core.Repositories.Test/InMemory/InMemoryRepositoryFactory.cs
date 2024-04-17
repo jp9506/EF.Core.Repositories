@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace EF.Core.Repositories.Test.InMemory
@@ -13,6 +14,7 @@ namespace EF.Core.Repositories.Test.InMemory
             _databaseRoot = new InMemoryDatabaseRoot();
             _options = new DbContextOptionsBuilder<TContext>()
                 .UseInMemoryDatabase(typeof(TContext).FullName!, _databaseRoot)
+                .ConfigureWarnings(b => b.Ignore(InMemoryEventId.TransactionIgnoredWarning))
                 .Options;
         }
     }

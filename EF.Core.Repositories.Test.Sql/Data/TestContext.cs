@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
-namespace EF.Core.Repositories.Test.Sqlite.Data
+namespace EF.Core.Repositories.Test.Sql.Data
 {
     public class TestContext : DbContext
     {
@@ -8,12 +9,33 @@ namespace EF.Core.Repositories.Test.Sqlite.Data
         {
         }
 
+        public virtual DbSet<Class> Classes { get; set; }
         public virtual DbSet<Role> Roles { get; set; }
         public virtual DbSet<UserRole> UserRoles { get; set; }
         public virtual DbSet<User> Users { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Class>(entity =>
+            {
+                entity.Property(e => e.Id).HasDefaultValueSql("NEWID()");
+                entity.HasMany(d => d.Users).WithMany(p => p.Classes)
+                    .UsingEntity<Dictionary<string, object>>(
+                        "ClassesUser",
+                        r => r.HasOne<User>().WithMany()
+                            .HasForeignKey("UserId")
+                            .OnDelete(DeleteBehavior.ClientSetNull)
+                            .HasConstraintName("FK_Classes_Users_UserId_Users_Id"),
+                        l => l.HasOne<Class>().WithMany()
+                            .HasForeignKey("ClassId")
+                            .OnDelete(DeleteBehavior.ClientSetNull)
+                            .HasConstraintName("FK_Classes_Users_ClassId_Classes_Id"),
+                        j =>
+                        {
+                            j.HasKey("ClassId", "UserId");
+                            j.ToTable("Classes_Users");
+                        });
+            });
             modelBuilder.Entity<Role>(entity =>
             {
             });
@@ -30,7 +52,7 @@ namespace EF.Core.Repositories.Test.Sqlite.Data
             {
                 entity.Property(e => e.Id).HasDefaultValueSql("NEWID()");
                 entity.HasOne(x => x.Supervisor).WithMany(p => p.SupervisedUsers)
-                    .OnDelete(DeleteBehavior.SetNull)
+                    .OnDelete(DeleteBehavior.NoAction)
                     .HasConstraintName("FK_Users_SupervisorId_User_Id");
             });
         }
