@@ -10,13 +10,13 @@ namespace EF.Core.Repositories.Test.Sqlite
     internal class SqliteFactoryBuilder<TContext> : FactoryBuilderBase<TContext>
         where TContext : DbContext
     {
-        public SqliteFactoryBuilder(Func<IEnumerable<object>> entityFunction) : base(entityFunction)
+        public SqliteFactoryBuilder(Func<IEnumerable<object>> seedFunction) : base(seedFunction)
         { }
 
-        public SqliteFactoryBuilder(Func<Task<IEnumerable<object>>> entityFunction) : base(entityFunction)
+        public SqliteFactoryBuilder(Func<Task<IEnumerable<object>>> seedFunction) : base(seedFunction)
         { }
 
-        public SqliteFactoryBuilder(Func<CancellationToken, Task<IEnumerable<object>>> entityFunction) : base(entityFunction)
+        public SqliteFactoryBuilder(Func<CancellationToken, Task<IEnumerable<object>>> seedFunction) : base(seedFunction)
         { }
 
         protected override IRepositoryFactory<TContext> GetFactory() => new SqliteRepositoryFactory<TContext>();

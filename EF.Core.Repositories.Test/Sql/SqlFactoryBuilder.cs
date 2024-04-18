@@ -16,17 +16,17 @@ namespace EF.Core.Repositories.Test.Sql
     {
         private readonly SqlConnectionStringBuilder _builder;
 
-        public SqlFactoryBuilder(SqlConnectionStringBuilder builder, Func<IEnumerable<object>> entityFunction) : base(entityFunction)
+        public SqlFactoryBuilder(SqlConnectionStringBuilder builder, Func<IEnumerable<object>> seedFunction) : base(seedFunction)
         {
             _builder = builder;
         }
 
-        public SqlFactoryBuilder(SqlConnectionStringBuilder builder, Func<Task<IEnumerable<object>>> entityFunction) : base(entityFunction)
+        public SqlFactoryBuilder(SqlConnectionStringBuilder builder, Func<Task<IEnumerable<object>>> seedFunction) : base(seedFunction)
         {
             _builder = builder;
         }
 
-        public SqlFactoryBuilder(SqlConnectionStringBuilder builder, Func<CancellationToken, Task<IEnumerable<object>>> entityFunction) : base(entityFunction)
+        public SqlFactoryBuilder(SqlConnectionStringBuilder builder, Func<CancellationToken, Task<IEnumerable<object>>> seedFunction) : base(seedFunction)
         {
             _builder = builder;
         }
@@ -37,7 +37,7 @@ namespace EF.Core.Repositories.Test.Sql
             using var context = await factory.GetDbContextAsync(cancellationToken);
             await context.Database.EnsureDeletedAsync(cancellationToken);
             await context.Database.EnsureCreatedAsync(cancellationToken);
-            await context.SeedDataAsync(await _entityFunction(cancellationToken), cancellationToken);
+            await context.SeedDataAsync(await _seedFunction(cancellationToken), cancellationToken);
             return factory;
         }
 
