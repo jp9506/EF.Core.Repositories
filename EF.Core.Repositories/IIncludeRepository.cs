@@ -8,6 +8,17 @@ using System.Threading.Tasks;
 namespace EF.Core.Repositories
 {
     /// <summary>
+    /// Supports <see cref="IReadOnlyRepository{T}"/> Include/ThenInclude chaining operators.
+    /// </summary>
+    /// <typeparam name="TEntity">The entity type.</typeparam>
+    /// <typeparam name="TProp">The property type.</typeparam>
+    public interface IIncludeReadOnlyRepository<TEntity, TProp> : IReadOnlyRepository<TEntity>
+        where TEntity : class
+        where TProp : class?
+    {
+    }
+
+    /// <summary>
     /// Supports <see cref="IRepository{T}"/> Include/ThenInclude chaining operators.
     /// </summary>
     /// <typeparam name="TEntity">The entity type.</typeparam>
@@ -30,6 +41,12 @@ namespace EF.Core.Repositories
         where TProp : class?
     {
         IIncludableQueryable<TEntity, TProp> EntityQuery(DbContext context);
+    }
+
+    internal interface IInternalIncludeReadOnlyRepository<TEntity, TProp> : IIncludeReadOnlyRepository<TEntity, TProp>, IInternalReadOnlyRepository<TEntity>
+        where TEntity : class
+        where TProp : class?
+    {
     }
 
     internal interface IInternalIncludeRepository<TEntity, TProp> : IIncludeRepository<TEntity, TProp>, IInternalRepository<TEntity>

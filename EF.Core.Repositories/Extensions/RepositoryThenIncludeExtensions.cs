@@ -43,6 +43,33 @@ namespace EF.Core.Repositories.Extensions
         }
 
         /// <summary>
+        /// Specifies additional related entities to include in the <see cref="IReadOnlyRepository{T}"/>. The
+        /// navigation property to be included is specified starting with the type of entity previously
+        /// included. If you wish to include additional types based on the navigation properties of
+        /// the type being included, then chain a call to <see
+        /// cref="ThenInclude{TEntity, TPrevProp,
+        /// TProp}(IIncludeReadOnlyRepository{TEntity, TPrevProp}, Expression{Func{TPrevProp,
+        /// ICollection{TProp}}})"/> after this call.
+        /// </summary>
+        /// <typeparam name="TEntity">The type of entity being queried.</typeparam>
+        /// <typeparam name="TPrevProp">The type of the entity that was just included.</typeparam>
+        /// <typeparam name="TProp">The type of the related entity to be included.</typeparam>
+        /// <param name="repository">The source <see cref="IRepository{T}"/></param>
+        /// <param name="expression">
+        /// A lambda expression representing the navigation property to be included (t =&gt; t.Property1).
+        /// </param>
+        /// <returns>
+        /// An <see cref="IIncludeReadOnlyRepository{TEntity, TProp}"/> with the related data included.
+        /// </returns>
+        public static IIncludeReadOnlyRepository<TEntity, TProp> ThenInclude<TEntity, TPrevProp, TProp>(this IIncludeReadOnlyRepository<TEntity, TPrevProp> repository, Expression<Func<TPrevProp, ICollection<TProp>>> expression)
+            where TEntity : class
+            where TPrevProp : class?
+            where TProp : class?
+        {
+            return new ThenIncludeCollectionReadOnlyRepository<TEntity, TPrevProp, TProp>(repository, expression);
+        }
+
+        /// <summary>
         /// Specifies additional related entities to include in the <see cref="IRepository{T}"/>. The
         /// navigation property to be included is specified starting with the type of entity previously
         /// included. If you wish to include additional types based on the navigation properties of
@@ -69,8 +96,61 @@ namespace EF.Core.Repositories.Extensions
             return new ThenIncludeRepository<TEntity, TPrevProp, TProp>(repository, expression);
         }
 
-        private sealed class ThenIncludeCollectionRepository<TEntity, TPrevProp, TProp> : ThenIncludeRepositoryBase<TEntity, TPrevProp, TProp>, IExtensibleIncludeCollectionRepository<TEntity, TProp>
+        /// <summary>
+        /// Specifies additional related entities to include in the <see cref="IReadOnlyRepository{T}"/>. The
+        /// navigation property to be included is specified starting with the type of entity previously
+        /// included. If you wish to include additional types based on the navigation properties of
+        /// the type being included, then chain a call to <see
+        /// cref="ThenInclude{TEntity, TPrevProp,
+        /// TProp}(IIncludeReadOnlyRepository{TEntity, TPrevProp}, Expression{Func{TPrevProp,
+        /// ICollection{TProp}}})"/> after this call.
+        /// </summary>
+        /// <typeparam name="TEntity">The type of entity being queried.</typeparam>
+        /// <typeparam name="TPrevProp">The type of the entity that was just included.</typeparam>
+        /// <typeparam name="TProp">The type of the related entity to be included.</typeparam>
+        /// <param name="repository">The source <see cref="IRepository{T}"/></param>
+        /// <param name="expression">
+        /// A lambda expression representing the navigation property to be included (t =&gt; t.Property1).
+        /// </param>
+        /// <returns>
+        /// An <see cref="IIncludeReadOnlyRepository{TEntity, TProp}"/> with the related data included.
+        /// </returns>
+        public static IIncludeReadOnlyRepository<TEntity, TProp> ThenInclude<TEntity, TPrevProp, TProp>(this IIncludeReadOnlyRepository<TEntity, TPrevProp> repository, Expression<Func<TPrevProp, TProp>> expression)
             where TEntity : class
+            where TPrevProp : class?
+            where TProp : class?
+        {
+            return new ThenIncludeReadOnlyRepository<TEntity, TPrevProp, TProp>(repository, expression);
+        }
+
+        private sealed class ThenIncludeCollectionReadOnlyRepository<TEntity, TPrevProp, TProp> : ThenIncludeReadOnlyRepositoryBase<TEntity, TPrevProp, TProp>, IExtensibleIncludeCollectionRepository<TEntity, TProp>
+            where TEntity : class
+            where TPrevProp : class?
+            where TProp : class?
+        {
+            private readonly Expression<Func<TPrevProp, ICollection<TProp>>> _expression;
+
+            public ThenIncludeCollectionReadOnlyRepository(IIncludeReadOnlyRepository<TEntity, TPrevProp> source, Expression<Func<TPrevProp, ICollection<TProp>>> expression) : base(source)
+            {
+                _expression = expression;
+            }
+
+            public override IIncludableQueryable<TEntity, ICollection<TProp>> EntityQuery(DbContext context)
+            {
+                if (_internalSource is IExtensibleIncludeRepository<TEntity, TPrevProp> source)
+                {
+                    return source.EntityQuery(context).ThenInclude(_expression);
+                }
+                if (_internalSource is IExtensibleIncludeCollectionRepository<TEntity, TPrevProp> colSource)
+                {
+                    return colSource.EntityQuery(context).ThenInclude(_expression);
+                }
+                throw new NotImplementedException();
+            }
+        }
+
+        private sealed class ThenIncludeCollectionRepository<TEntity, TPrevProp, TProp> : ThenIncludeRepositoryBase<TEntity, TPrevProp, TProp>, IExtensibleIncludeCollectionRepository<TEntity, TProp>
+                    where TEntity : class
             where TPrevProp : class?
             where TProp : class?
         {
@@ -115,8 +195,44 @@ namespace EF.Core.Repositories.Extensions
             }
         }
 
-        private sealed class ThenIncludeRepository<TEntity, TPrevProp, TProp> : ThenIncludeRepositoryBase<TEntity, TPrevProp, TProp>, IExtensibleIncludeRepository<TEntity, TProp>
+        private sealed class ThenIncludeReadOnlyRepository<TEntity, TPrevProp, TProp> : ThenIncludeReadOnlyRepositoryBase<TEntity, TPrevProp, TProp>, IExtensibleIncludeRepository<TEntity, TProp>
             where TEntity : class
+            where TPrevProp : class?
+            where TProp : class?
+        {
+            private readonly Expression<Func<TPrevProp, TProp>> _expression;
+
+            public ThenIncludeReadOnlyRepository(IIncludeReadOnlyRepository<TEntity, TPrevProp> source, Expression<Func<TPrevProp, TProp>> expression) : base(source)
+            {
+                _expression = expression;
+            }
+
+            public override IIncludableQueryable<TEntity, TProp> EntityQuery(DbContext context)
+            {
+                if (_internalSource is IExtensibleIncludeRepository<TEntity, TPrevProp> source)
+                {
+                    return source.EntityQuery(context).ThenInclude(_expression);
+                }
+                if (_internalSource is IExtensibleIncludeCollectionRepository<TEntity, TPrevProp> colSource)
+                {
+                    return colSource.EntityQuery(context).ThenInclude(_expression);
+                }
+                throw new NotImplementedException();
+            }
+        }
+
+        private abstract class ThenIncludeReadOnlyRepositoryBase<TEntity, TPrevProp, TProp> : WrapperReadOnlyRepositoryBase<TEntity, IInternalIncludeReadOnlyRepository<TEntity, TPrevProp>>, IInternalIncludeReadOnlyRepository<TEntity, TProp>
+            where TEntity : class
+            where TPrevProp : class?
+            where TProp : class?
+        {
+            protected ThenIncludeReadOnlyRepositoryBase(IIncludeReadOnlyRepository<TEntity, TPrevProp> source) : base((IInternalIncludeReadOnlyRepository<TEntity, TPrevProp>)source)
+            {
+            }
+        }
+
+        private sealed class ThenIncludeRepository<TEntity, TPrevProp, TProp> : ThenIncludeRepositoryBase<TEntity, TPrevProp, TProp>, IExtensibleIncludeRepository<TEntity, TProp>
+                            where TEntity : class
             where TPrevProp : class?
             where TProp : class?
         {
