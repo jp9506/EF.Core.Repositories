@@ -161,6 +161,26 @@ var result = await repository
   .UpdateAsync(user);
 ```
 
+### Transactions
+Normally calls to InsertAsync or UpdateAsync immediately call SaveChangesAsync on the backing context and commit the changeset to the database.
+
+Transactions allow for multiple changes to be committed to the database within a single SaveChangesAsync.
+
+#### Example
+Inserting multiple users.
+```csharp
+    using var transaction = _factory.CreateTransaction();
+
+    var repository = transaction.GetRepository<User>();
+
+    foreach (var user in users)
+    {
+        await repository.InsertAsync(user);
+    }
+
+    var inserted = await transaction.CommitAsync();
+```
+
 ## Testing
 The EF.Core.Repositories.Test package can be used to facilitate testing.
 
