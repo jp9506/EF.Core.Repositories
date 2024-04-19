@@ -65,6 +65,9 @@ namespace EF.Core.Repositories.Extensions
         /// <typeparam name="TKey">
         /// The type of the key returned by the function represented by <paramref name="keySelector"/>.
         /// </typeparam>
+        /// <typeparam name="TElement">
+        /// The type of the elements in each <see cref="IGrouping{TKey, TElement}"/>.
+        /// </typeparam>
         /// <param name="repository">
         /// An <see cref="IReadOnlyRepository{T}"/> whose elements to group.
         /// </param>
@@ -92,6 +95,9 @@ namespace EF.Core.Repositories.Extensions
         /// <typeparam name="TEntity">The type of the elements of <paramref name="repository"/>.</typeparam>
         /// <typeparam name="TKey">
         /// The type of the key returned by the function represented by <paramref name="keySelector"/>.
+        /// </typeparam>
+        /// <typeparam name="TElement">
+        /// The type of the elements in each <see cref="IGrouping{TKey, TElement}"/>.
         /// </typeparam>
         /// <param name="repository">
         /// An <see cref="IReadOnlyRepository{T}"/> whose elements to group.

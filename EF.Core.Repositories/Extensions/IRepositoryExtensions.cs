@@ -157,7 +157,7 @@ namespace EF.Core.Repositories.Extensions
         /// Update an entity from a repository.
         /// </summary>
         /// <typeparam name="T">The type of the elements of <paramref name="repository"/>.</typeparam>
-        /// <param name="repository">An <see cref="IRepository{T}"/> to update the <param name="entity"/>.</param>
+        /// <param name="repository">An <see cref="IRepository{T}"/> to update the <paramref name="entity"/>.</param>
         /// <param name="entity">The entity to update.</param>
         /// <param name="cancellationToken">
         /// A <see cref="CancellationToken"/> to observe while waiting for the task to complete.
@@ -200,7 +200,7 @@ namespace EF.Core.Repositories.Extensions
         /// Insert an entity into a repository.
         /// </summary>
         /// <typeparam name="T">The type of the elements of <paramref name="repository"/>.</typeparam>
-        /// <param name="repository">An <see cref="IRepository{T}"/> to insert the <param name="entity"/>.</param>
+        /// <param name="repository">An <see cref="IRepository{T}"/> to insert the <paramref name="entity"/>.</param>
         /// <param name="entity">The entity to insert.</param>
         /// <param name="cancellationToken">
         /// A <see cref="CancellationToken"/> to observe while waiting for the task to complete.

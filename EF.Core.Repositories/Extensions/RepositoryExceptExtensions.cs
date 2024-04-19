@@ -1,5 +1,6 @@
 ﻿using EF.Core.Repositories.Internal.Base;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -10,7 +11,7 @@ namespace EF.Core.Repositories.Extensions
         /// <summary>
         /// Produces the set difference of two repositories by using the default equality comparer.
         /// </summary>
-        /// <typeparam name="T">The type of the elements of <paramref name="repository"/>.</typeparam>
+        /// <typeparam name="T">The type of the elements of <paramref name="source1"/>.</typeparam>
         /// <param name="source1">
         /// An <see cref="IReadOnlyRepository{T}"/> whose elements that are not also in <paramref
         /// name="source2"/> will be returned.
@@ -36,7 +37,7 @@ namespace EF.Core.Repositories.Extensions
         /// <summary>
         /// Produces the set difference of two repositories by using the specified <see cref="IEqualityComparer{T}"/>.
         /// </summary>
-        /// <typeparam name="T">The type of the elements of <paramref name="repository"/>.</typeparam>
+        /// <typeparam name="T">The type of the elements of <paramref name="source1"/>.</typeparam>
         /// <param name="source1">
         /// An <see cref="IReadOnlyRepository{T}"/> whose elements that are not also in <paramref
         /// name="source2"/> will be returned.
