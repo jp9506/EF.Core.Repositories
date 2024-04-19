@@ -169,16 +169,16 @@ Transactions allow for multiple changes to be committed to the database within a
 #### Example
 Inserting multiple users.
 ```csharp
-    using var transaction = _factory.CreateTransaction();
+using var transaction = _factory.CreateTransaction();
 
-    var repository = transaction.GetRepository<User>();
+var repository = transaction.GetRepository<User>();
 
-    foreach (var user in users)
-    {
-        await repository.InsertAsync(user);
-    }
+foreach (var user in users)
+{
+    await repository.InsertAsync(user);
+}
 
-    var inserted = await transaction.CommitAsync();
+var inserted = await transaction.CommitAsync();
 ```
 
 ## Testing
