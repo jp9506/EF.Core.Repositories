@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace EF.Core.Repositories.Extensions
 {
+    /// <summary>
+    /// LINQ extension methods for <see cref="IRepository{T}"/>.
+    /// </summary>
     public static class IRepositoryExtensions
     {
         #region Get

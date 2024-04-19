@@ -7,6 +7,9 @@ using System.Linq.Expressions;
 
 namespace EF.Core.Repositories.Extensions
 {
+    /// <summary>
+    /// Select Many extension methods for <see cref="IReadOnlyRepository{T}"/>.
+    /// </summary>
     public static class RepositorySelectManyExtensions
     {
         /// <summary>

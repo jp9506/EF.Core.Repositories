@@ -2,6 +2,9 @@
 
 namespace EF.Core.Repositories.Extensions
 {
+    /// <summary>
+    /// Extension methods for <see cref="IRepositoryFactory"/>.
+    /// </summary>
     public static class RepositoryFactoryExtensions
     {
         /// <summary>

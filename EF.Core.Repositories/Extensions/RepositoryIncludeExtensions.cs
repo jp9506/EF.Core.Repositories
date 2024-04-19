@@ -11,6 +11,9 @@ using System.Threading.Tasks;
 
 namespace EF.Core.Repositories.Extensions
 {
+    /// <summary>
+    /// Include extension methods for <see cref="IRepository{T}"/> and <see cref="IReadOnlyRepository{T}"/>.
+    /// </summary>
     public static class RepositoryIncludeExtensions
     {
         /// <summary>
