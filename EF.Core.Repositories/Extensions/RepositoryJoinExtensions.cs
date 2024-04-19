@@ -7,6 +7,9 @@ using System.Linq.Expressions;
 
 namespace EF.Core.Repositories.Extensions
 {
+    /// <summary>
+    /// Join extension methods for <see cref="IReadOnlyRepository{T}"/>.
+    /// </summary>
     public static class RepositoryJoinExtensions
     {
         /// <summary>

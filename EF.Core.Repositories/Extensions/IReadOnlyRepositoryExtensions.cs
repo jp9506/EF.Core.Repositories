@@ -8,8 +8,25 @@ using System.Threading.Tasks;
 
 namespace EF.Core.Repositories.Extensions
 {
+    /// <summary>
+    /// LINQ extension methods for <see cref="IReadOnlyRepository{T}"/>.
+    /// </summary>
     public static class IReadOnlyRepositoryExtensions
     {
+        /// <summary>
+        /// Generates a string representation of the query used. This string may not be suitable for
+        /// direct execution is intended only for use in debugging.
+        /// </summary>
+        /// <typeparam name="T">The type of the elements of <paramref name="repository"/>.</typeparam>
+        /// <param name="repository">An <see cref="IReadOnlyRepository{T}"/>.</param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> to observe while waiting for the task to complete.
+        /// </param>
+        /// <returns>The query string for debugging.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="repository"/> is <see langword="null"/>.</exception>
+        /// <exception cref="OperationCanceledException">
+        /// If the <see cref="CancellationToken"/> is canceled.
+        /// </exception>
         public static async Task<string> ToQueryStringAsync<T>(this IReadOnlyRepository<T> repository, CancellationToken cancellationToken = default)
             => await ((IInternalReadOnlyRepository<T>)repository).ExecuteAsync(x => x.ToQueryString(), cancellationToken);
 

@@ -6,6 +6,9 @@ using System.Linq;
 
 namespace EF.Core.Repositories.Extensions
 {
+    /// <summary>
+    /// Distinct extension methods for <see cref="IReadOnlyRepository{T}"/>.
+    /// </summary>
     public static class RepositoryDistinctExtensions
     {
         /// <summary>

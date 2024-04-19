@@ -6,6 +6,9 @@ using System.Linq;
 
 namespace EF.Core.Repositories.Extensions
 {
+    /// <summary>
+    /// Except extension methods for <see cref="IReadOnlyRepository{T}"/>.
+    /// </summary>
     public static class RepositoryExceptExtensions
     {
         /// <summary>

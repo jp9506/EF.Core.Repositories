@@ -5,6 +5,9 @@ using System;
 
 namespace EF.Core.Repositories.Extensions
 {
+    /// <summary>
+    /// Extension methods for registering <see cref="IRepositoryFactory{TContext}"/> within the DI container.
+    /// </summary>
     public static class ServiceCollectionExtensions
     {
         /// <summary>

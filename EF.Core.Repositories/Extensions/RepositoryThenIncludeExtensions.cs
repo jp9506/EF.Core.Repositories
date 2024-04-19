@@ -9,20 +9,21 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-#pragma warning disable S2436 // Types and methods should not have too many generic parameters
-
 namespace EF.Core.Repositories.Extensions
 {
+    /// <summary>
+    /// Then Include extension methods for <see cref="IIncludeRepository{TEntity, TProp}"/> and <see
+    /// cref="IIncludeReadOnlyRepository{TEntity, TProp}"/>.
+    /// </summary>
     public static class RepositoryThenIncludeExtensions
     {
         /// <summary>
-        /// Specifies additional related entities to include in the <see cref="IRepository{T}"/>. The
-        /// navigation property to be included is specified starting with the type of entity previously
-        /// included. If you wish to include additional types based on the navigation properties of
-        /// the type being included, then chain a call to <see
-        /// cref="ThenInclude{TEntity, TPrevProp,
-        /// TProp}(IIncludeRepository{TEntity, TPrevProp}, Expression{Func{TPrevProp,
-        /// ICollection{TProp}}})"/> after this call.
+        /// Specifies additional related entities to include in the <see cref="IRepository{T}"/>.
+        /// The navigation property to be included is specified starting with the type of entity
+        /// previously included. If you wish to include additional types based on the navigation
+        /// properties of the type being included, then chain a call to <see
+        /// cref="ThenInclude{TEntity, TPrevProp, TProp}(IIncludeRepository{TEntity, TPrevProp},
+        /// Expression{Func{TPrevProp, ICollection{TProp}}})"/> after this call.
         /// </summary>
         /// <typeparam name="TEntity">The type of entity being queried.</typeparam>
         /// <typeparam name="TPrevProp">The type of the entity that was just included.</typeparam>
@@ -43,13 +44,12 @@ namespace EF.Core.Repositories.Extensions
         }
 
         /// <summary>
-        /// Specifies additional related entities to include in the <see cref="IReadOnlyRepository{T}"/>. The
-        /// navigation property to be included is specified starting with the type of entity previously
-        /// included. If you wish to include additional types based on the navigation properties of
-        /// the type being included, then chain a call to <see
-        /// cref="ThenInclude{TEntity, TPrevProp,
-        /// TProp}(IIncludeReadOnlyRepository{TEntity, TPrevProp}, Expression{Func{TPrevProp,
-        /// ICollection{TProp}}})"/> after this call.
+        /// Specifies additional related entities to include in the <see
+        /// cref="IReadOnlyRepository{T}"/>. The navigation property to be included is specified
+        /// starting with the type of entity previously included. If you wish to include additional
+        /// types based on the navigation properties of the type being included, then chain a call
+        /// to <see cref="ThenInclude{TEntity, TPrevProp, TProp}(IIncludeReadOnlyRepository{TEntity,
+        /// TPrevProp}, Expression{Func{TPrevProp, ICollection{TProp}}})"/> after this call.
         /// </summary>
         /// <typeparam name="TEntity">The type of entity being queried.</typeparam>
         /// <typeparam name="TPrevProp">The type of the entity that was just included.</typeparam>
@@ -70,13 +70,12 @@ namespace EF.Core.Repositories.Extensions
         }
 
         /// <summary>
-        /// Specifies additional related entities to include in the <see cref="IRepository{T}"/>. The
-        /// navigation property to be included is specified starting with the type of entity previously
-        /// included. If you wish to include additional types based on the navigation properties of
-        /// the type being included, then chain a call to <see
-        /// cref="ThenInclude{TEntity, TPrevProp,
-        /// TProp}(IIncludeRepository{TEntity, TPrevProp}, Expression{Func{TPrevProp,
-        /// ICollection{TProp}}})"/> after this call.
+        /// Specifies additional related entities to include in the <see cref="IRepository{T}"/>.
+        /// The navigation property to be included is specified starting with the type of entity
+        /// previously included. If you wish to include additional types based on the navigation
+        /// properties of the type being included, then chain a call to <see
+        /// cref="ThenInclude{TEntity, TPrevProp, TProp}(IIncludeRepository{TEntity, TPrevProp},
+        /// Expression{Func{TPrevProp, ICollection{TProp}}})"/> after this call.
         /// </summary>
         /// <typeparam name="TEntity">The type of entity being queried.</typeparam>
         /// <typeparam name="TPrevProp">The type of the entity that was just included.</typeparam>
@@ -97,13 +96,12 @@ namespace EF.Core.Repositories.Extensions
         }
 
         /// <summary>
-        /// Specifies additional related entities to include in the <see cref="IReadOnlyRepository{T}"/>. The
-        /// navigation property to be included is specified starting with the type of entity previously
-        /// included. If you wish to include additional types based on the navigation properties of
-        /// the type being included, then chain a call to <see
-        /// cref="ThenInclude{TEntity, TPrevProp,
-        /// TProp}(IIncludeReadOnlyRepository{TEntity, TPrevProp}, Expression{Func{TPrevProp,
-        /// ICollection{TProp}}})"/> after this call.
+        /// Specifies additional related entities to include in the <see
+        /// cref="IReadOnlyRepository{T}"/>. The navigation property to be included is specified
+        /// starting with the type of entity previously included. If you wish to include additional
+        /// types based on the navigation properties of the type being included, then chain a call
+        /// to <see cref="ThenInclude{TEntity, TPrevProp, TProp}(IIncludeReadOnlyRepository{TEntity,
+        /// TPrevProp}, Expression{Func{TPrevProp, ICollection{TProp}}})"/> after this call.
         /// </summary>
         /// <typeparam name="TEntity">The type of entity being queried.</typeparam>
         /// <typeparam name="TPrevProp">The type of the entity that was just included.</typeparam>
@@ -298,5 +296,3 @@ namespace EF.Core.Repositories.Extensions
         }
     }
 }
-
-#pragma warning restore S2436 // Types and methods should not have too many generic parameters

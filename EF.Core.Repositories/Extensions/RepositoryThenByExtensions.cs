@@ -7,6 +7,9 @@ using System.Linq.Expressions;
 
 namespace EF.Core.Repositories.Extensions
 {
+    /// <summary>
+    /// Then By extension methods for <see cref="IOrderedRepository{T}"/>.
+    /// </summary>
     public static class RepositoryThenByExtensions
     {
         /// <summary>

@@ -6,6 +6,9 @@ using System.Linq.Expressions;
 
 namespace EF.Core.Repositories.Extensions
 {
+    /// <summary>
+    /// Skip extension methods for <see cref="IReadOnlyRepository{T}"/>.
+    /// </summary>
     public static class RepositorySkipExtensions
     {
         /// <summary>
