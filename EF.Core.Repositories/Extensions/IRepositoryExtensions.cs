@@ -224,6 +224,7 @@ namespace EF.Core.Repositories.Extensions
             {
                 var ctx = await t.GetDbContextAsync(cancellationToken);
                 var e = ctx.Attach(entity);
+                e.State = EntityState.Added;
                 if (t.AutoCommit)
                 {
                     var res = await t.CommitAsync(cancellationToken);

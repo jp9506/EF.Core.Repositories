@@ -160,3 +160,92 @@ var result = await repository
   .Include(x => x.UserRoles)
   .UpdateAsync(user);
 ```
+
+## Testing
+The EF.Core.Repositories.Test package can be used to facilitate testing.
+
+### Supported Providers
+Currently there are three data providers supported.
+- InMemory
+    - Utilizes the EntityFrameworkCore.InMemory provider
+- Sqlite
+    - Utilizes the EntityFrameworkCore.Sqlite provider with in memory Sqlite instances
+- Sql (*Recommended*)
+    - Utilizes the EntityFrameworkCore.SqlServer provider
+    - A connection string must be passed to the builder method for use during tests
+        - Initial Catalog parameter will be ignored if included
+    - User must have create database permissions on the server
+    - Each time CreateFactoryAsync() is called a new database on configured server is created
+    - Sql Factories will automatically delete the created database when disposed.
+    - Failed tests will not trigger .Dispose() when factory is wrapped in a using context.
+        - This will cause that database to survive and be available to aid in debugging test failure.
+
+### FactoryBuilders
+Each provider has an IFactoryBuilder&lt;T&gt; which uses a seed function to specify all objects that should be stored in the data source when it is initialized.
+
+Best practice is to initialize a builder in your constructor and then create a factory to start each test.  This will result in each test using its own data source.
+
+### Example
+Testing a UserController's Add/Update endpoints
+
+```csharp
+public class UserControllerTests
+{
+    private readonly IFactoryBuilder<MyContext> _builder;
+
+    public UserControllerTests()
+    {
+        _builder = IFactoryBuilder<MyContext>.Sql("Server=(local);Integrated Security=true;TrustServerCertificate=true",
+            () => new object[]
+            {
+                new User
+                {
+                    Id = 1,
+                    Name = "Test User",
+                    Email = "user@test.com",
+                }
+            });
+    }
+
+    [Fact]
+    public async void AddUser()
+    {
+        using var factory = await _builder.CreateFactoryAsync();
+
+        var controller = new UserController(factory);
+
+        var user = new User
+        {
+            Id = 2,
+            Name = "Test User 2",
+            Email = "user2@test.com",
+        };
+
+        var result = await controller.Add(user);
+
+        Assert.NotNull(result);
+        Assert.Equal(200, result.StatusCode);
+    }
+
+    [Fact]
+    public async void UpdateUser()
+    {
+        using var factory = await _builder.CreateFactoryAsync();
+
+        var controller = new UserController(factory);
+
+        var user = new User
+        {
+            Id = 1,
+            Name = "Test User 1",
+            Email = "user1@test.com",
+        };
+
+        var result = await controller.Update(user);
+
+        Assert.NotNull(result);
+        Assert.Equal(200, result.StatusCode);
+    }
+
+}
+```
