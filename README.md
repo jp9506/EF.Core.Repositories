@@ -16,7 +16,7 @@ $ dotnet add package EF.Core.Repositories
 ## Getting Started
 The Repository Factory can be registered by calling ConfigureData() extension.
 
-The Action<DbContextOptionsBuilder> will be passed to AddDbContextFactory() extension provided by Entity Framework Core.
+The Action&lt;DbContextOptionsBuilder&gt; will be passed to AddDbContextFactory() extension provided by Entity Framework Core.
 
 *Note* Due to the support for multiple asynchronous actions being executed against one or more repositories, multiple contexts may be created, and leveraging a DbContextFactory is required.
 ```csharp
@@ -24,6 +24,7 @@ using EF.Core.Repositories;
 ...
 services.ConfigureData<TContext>(opt => ...);
 ```
+
 Within a Service/Controller/etc.
 ```csharp
 public class Consumer
@@ -113,13 +114,9 @@ var users = await repository.GetAsync();
 IRepository has all the async extensions available to IReadOnlyRepository and adds the following.
 - DeleteAsync(entity)
 - DeleteByIdAsync(key)
-- DeleteRangeAsync(entities)
-- DeleteRangeByIdAsync(keys)
 - GetAsync(key)
 - InsertAsync(entity)
-- InsertRangeAsync(entities)
 - UpdateAsync(entity)
-- UpdateRangeAsync(entities)
 
 #### GetAsync(key) and DeleteByIdAsync(key)
 These functions allow you to retreive/remove an entity based upon primary key data.
@@ -162,4 +159,125 @@ user.UserRoles.Add(
 var result = await repository
   .Include(x => x.UserRoles)
   .UpdateAsync(user);
+```
+
+### Transactions
+Normally calls to InsertAsync or UpdateAsync immediately call SaveChangesAsync on the backing context and commit the changeset to the database.
+
+Transactions allow for multiple changes to be committed to the database within a single SaveChangesAsync.
+
+#### Example
+Inserting multiple users.
+```csharp
+using var transaction = _factory.CreateTransaction();
+
+var repository = transaction.GetRepository<User>();
+
+foreach (var user in users)
+{
+    await repository.InsertAsync(user);
+}
+
+var inserted = await transaction.CommitAsync();
+```
+or
+```csharp
+using var transaction = _factory.CreateTransaction();
+
+var repository = transaction.GetRepository<User>();
+
+await Task.WhenAll(
+  users.Select(async user =>
+    await repository.InsertAsync(user)));
+
+var inserted = await transaction.CommitAsync();
+```
+
+## Testing
+The EF.Core.Repositories.Test package can be used to facilitate testing.
+
+### Supported Providers
+Currently there are three data providers supported.
+- InMemory
+    - Utilizes the EntityFrameworkCore.InMemory provider
+- Sqlite
+    - Utilizes the EntityFrameworkCore.Sqlite provider with in memory Sqlite instances
+- Sql (*Recommended*)
+    - Utilizes the EntityFrameworkCore.SqlServer provider
+    - A connection string must be passed to the builder method for use during tests
+        - Initial Catalog parameter will be ignored if included
+    - User must have create database permissions on the server
+    - Each time CreateFactoryAsync() is called a new database on configured server is created
+    - Sql Factories will automatically delete the created database when disposed.
+    - Failed tests will not trigger .Dispose() when factory is wrapped in a using context.
+        - This will cause that database to survive and be available to aid in debugging test failure.
+
+### FactoryBuilders
+Each provider has an IFactoryBuilder&lt;T&gt; which uses a seed function to specify all objects that should be stored in the data source when it is initialized.
+
+Best practice is to initialize a builder in your constructor and then create a factory to start each test.  This will result in each test using its own data source.
+
+### Example
+Testing a UserController's Add/Update endpoints
+
+```csharp
+public class UserControllerTests
+{
+    private readonly IFactoryBuilder<MyContext> _builder;
+
+    public UserControllerTests()
+    {
+        _builder = IFactoryBuilder<MyContext>.Sql("Server=(local);Integrated Security=true;TrustServerCertificate=true",
+            () => new object[]
+            {
+                new User
+                {
+                    Id = 1,
+                    Name = "Test User",
+                    Email = "user@test.com",
+                }
+            });
+    }
+
+    [Fact]
+    public async void AddUser()
+    {
+        using var factory = await _builder.CreateFactoryAsync();
+
+        var controller = new UserController(factory);
+
+        var user = new User
+        {
+            Id = 2,
+            Name = "Test User 2",
+            Email = "user2@test.com",
+        };
+
+        var result = await controller.Add(user);
+
+        Assert.NotNull(result);
+        Assert.Equal(200, result.StatusCode);
+    }
+
+    [Fact]
+    public async void UpdateUser()
+    {
+        using var factory = await _builder.CreateFactoryAsync();
+
+        var controller = new UserController(factory);
+
+        var user = new User
+        {
+            Id = 1,
+            Name = "Test User 1",
+            Email = "user1@test.com",
+        };
+
+        var result = await controller.Update(user);
+
+        Assert.NotNull(result);
+        Assert.Equal(200, result.StatusCode);
+    }
+
+}
 ```

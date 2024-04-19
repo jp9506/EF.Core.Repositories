@@ -1,6 +1,7 @@
 ﻿using EF.Core.Repositories.Internal;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace EF.Core.Repositories.Extensions
 {

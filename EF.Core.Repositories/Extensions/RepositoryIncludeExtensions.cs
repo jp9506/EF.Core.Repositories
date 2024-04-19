@@ -2,7 +2,12 @@
 using EF.Core.Repositories.Internal.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace EF.Core.Repositories.Extensions
 {
@@ -34,6 +39,31 @@ namespace EF.Core.Repositories.Extensions
         }
 
         /// <summary>
+        /// Specifies related entities to include in the <see cref="IReadOnlyRepository{T}"/>. The
+        /// navigation property to be included is specified starting with the type of entity being
+        /// queried. If you wish to include additional types based on the navigation properties of
+        /// the type being included, then chain a call to <see
+        /// cref="RepositoryThenIncludeExtensions.ThenInclude{TEntity, TPrevProp,
+        /// TProp}(IIncludeReadOnlyRepository{TEntity, TPrevProp}, Expression{Func{TPrevProp,
+        /// ICollection{TProp}}})"/> after this call.
+        /// </summary>
+        /// <typeparam name="TEntity">The type of entity being queried.</typeparam>
+        /// <typeparam name="TProp">The type of the related entity to be included.</typeparam>
+        /// <param name="repository">The source <see cref="IReadOnlyRepository{T}"/></param>
+        /// <param name="expression">
+        /// A lambda expression representing the navigation property to be included (t =&gt; t.Property1).
+        /// </param>
+        /// <returns>
+        /// An <see cref="IIncludeReadOnlyRepository{TEntity, TProp}"/> with the related data included.
+        /// </returns>
+        public static IIncludeReadOnlyRepository<TEntity, TProp> Include<TEntity, TProp>(this IReadOnlyRepository<TEntity> repository, Expression<Func<TEntity, ICollection<TProp>>> expression)
+            where TEntity : class
+            where TProp : class?
+        {
+            return new IncludeCollectionReadOnlyRepository<TEntity, TProp>(repository, expression);
+        }
+
+        /// <summary>
         /// Specifies related entities to include in the <see cref="IRepository{T}"/>. The
         /// navigation property to be included is specified starting with the type of entity being
         /// queried. If you wish to include additional types based on the navigation properties of
@@ -58,8 +88,50 @@ namespace EF.Core.Repositories.Extensions
             return new IncludeRepository<TEntity, TProp>(repository, expression);
         }
 
-        private sealed class IncludeCollectionRepository<TEntity, TProp> : IncludeRepositoryBase<TEntity, TProp>, IExtensibleIncludeCollectionRepository<TEntity, TProp>
+        /// <summary>
+        /// Specifies related entities to include in the <see cref="IReadOnlyRepository{T}"/>. The
+        /// navigation property to be included is specified starting with the type of entity being
+        /// queried. If you wish to include additional types based on the navigation properties of
+        /// the type being included, then chain a call to <see
+        /// cref="RepositoryThenIncludeExtensions.ThenInclude{TEntity, TPrevProp,
+        /// TProp}(IIncludeReadOnlyRepository{TEntity, TPrevProp}, Expression{Func{TPrevProp,
+        /// ICollection{TProp}}})"/> after this call.
+        /// </summary>
+        /// <typeparam name="TEntity">The type of entity being queried.</typeparam>
+        /// <typeparam name="TProp">The type of the related entity to be included.</typeparam>
+        /// <param name="repository">The source <see cref="IReadOnlyRepository{T}"/></param>
+        /// <param name="expression">
+        /// A lambda expression representing the navigation property to be included (t =&gt; t.Property1).
+        /// </param>
+        /// <returns>
+        /// An <see cref="IIncludeReadOnlyRepository{TEntity, TProp}"/> with the related data included.
+        /// </returns>
+        public static IIncludeReadOnlyRepository<TEntity, TProp> Include<TEntity, TProp>(this IReadOnlyRepository<TEntity> repository, Expression<Func<TEntity, TProp>> expression)
             where TEntity : class
+            where TProp : class?
+        {
+            return new IncludeReadOnlyRepository<TEntity, TProp>(repository, expression);
+        }
+
+        private sealed class IncludeCollectionReadOnlyRepository<TEntity, TProp> : IncludeReadOnlyRepositoryBase<TEntity, TProp>, IExtensibleIncludeCollectionRepository<TEntity, TProp>
+            where TEntity : class
+            where TProp : class?
+        {
+            private readonly Expression<Func<TEntity, ICollection<TProp>>> _expression;
+
+            public IncludeCollectionReadOnlyRepository(IReadOnlyRepository<TEntity> source, Expression<Func<TEntity, ICollection<TProp>>> expression) : base(source)
+            {
+                _expression = expression;
+            }
+
+            public override IIncludableQueryable<TEntity, ICollection<TProp>> EntityQuery(DbContext context)
+            {
+                return _internalSource.EntityQuery(context).Include(_expression);
+            }
+        }
+
+        private sealed class IncludeCollectionRepository<TEntity, TProp> : IncludeRepositoryBase<TEntity, TProp>, IExtensibleIncludeCollectionRepository<TEntity, TProp>
+                    where TEntity : class
             where TProp : class?
         {
             private readonly Expression<Func<TEntity, ICollection<TProp>>> _expression;
@@ -91,6 +163,31 @@ namespace EF.Core.Repositories.Extensions
                     await Task.WhenAll(intersection.Select(async x => await then(x.c, x.n)));
                 }
             }
+        }
+
+        private sealed class IncludeReadOnlyRepository<TEntity, TProp> : IncludeReadOnlyRepositoryBase<TEntity, TProp>, IExtensibleIncludeRepository<TEntity, TProp>
+            where TEntity : class
+            where TProp : class?
+        {
+            private readonly Expression<Func<TEntity, TProp>> _expression;
+
+            public IncludeReadOnlyRepository(IReadOnlyRepository<TEntity> source, Expression<Func<TEntity, TProp>> expression) : base(source)
+            {
+                _expression = expression;
+            }
+
+            public override IIncludableQueryable<TEntity, TProp> EntityQuery(DbContext context)
+            {
+                return _internalSource.EntityQuery(context).Include(_expression);
+            }
+        }
+
+        private abstract class IncludeReadOnlyRepositoryBase<TEntity, TProp> : WrapperReadOnlyRepositoryBase<TEntity, IInternalReadOnlyRepository<TEntity>>, IInternalIncludeReadOnlyRepository<TEntity, TProp>
+            where TEntity : class
+            where TProp : class?
+        {
+            protected IncludeReadOnlyRepositoryBase(IReadOnlyRepository<TEntity> source) : base((IInternalReadOnlyRepository<TEntity>)source)
+            { }
         }
 
         private sealed class IncludeRepository<TEntity, TProp> : IncludeRepositoryBase<TEntity, TProp>, IExtensibleIncludeRepository<TEntity, TProp>

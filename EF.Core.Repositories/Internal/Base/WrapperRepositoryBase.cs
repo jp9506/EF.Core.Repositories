@@ -6,7 +6,7 @@
     {
         protected readonly TSource _internalSource;
 
-        protected WrapperRepositoryBase(TSource source) : base(source.Factory)
+        protected WrapperRepositoryBase(TSource source) : base(source.Transaction)
         {
             _internalSource = source;
         }

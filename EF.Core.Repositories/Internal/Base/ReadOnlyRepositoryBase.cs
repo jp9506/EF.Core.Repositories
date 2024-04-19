@@ -1,15 +1,16 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace EF.Core.Repositories.Internal.Base
 {
     internal abstract class ReadOnlyRepositoryBase<T> : IInternalReadOnlyRepository<T>
     {
-        protected ReadOnlyRepositoryBase(IRepositoryFactory factory)
+        protected ReadOnlyRepositoryBase(IInternalTransaction transaction)
         {
-            Factory = factory;
+            Transaction = transaction;
         }
 
-        public IRepositoryFactory Factory { get; }
+        public IInternalTransaction Transaction { get; }
 
         public abstract IQueryable<T> EntityQuery(DbContext context);
     }

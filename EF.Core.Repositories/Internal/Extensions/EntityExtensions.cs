@@ -1,6 +1,8 @@
 ﻿using EF.Core.Repositories.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace EF.Core.Repositories.Internal.Extensions
 {

@@ -1,5 +1,6 @@
-﻿using EF.Core.Repositories.Internal.Base;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace EF.Core.Repositories.Internal
 {
@@ -7,54 +8,40 @@ namespace EF.Core.Repositories.Internal
         where TContext : DbContext
     {
         private readonly IDbContextFactory<TContext> _contextFactory;
+        private bool disposedValue;
 
         public RepositoryFactory(IDbContextFactory<TContext> contextFactory)
         {
             _contextFactory = contextFactory;
         }
 
-        async Task<DbContext> IRepositoryFactory.CreateDbContextAsync(CancellationToken cancellationToken)
+        public void Dispose()
         {
-            return await CreateDbContextAsync(cancellationToken);
+            Dispose(disposing: true);
+            System.GC.SuppressFinalize(this);
         }
 
-        public async Task<TContext> CreateDbContextAsync(CancellationToken cancellationToken = default)
+        async Task<DbContext> IRepositoryFactory.GetDbContextAsync(CancellationToken cancellationToken)
+        {
+            return await GetDbContextAsync(cancellationToken);
+        }
+
+        public async Task<TContext> GetDbContextAsync(CancellationToken cancellationToken = default)
         {
             return await _contextFactory.CreateDbContextAsync(cancellationToken);
         }
 
-        public IReadOnlyRepository<T> GetReadOnlyRepository<T>()
-            where T : class
+        protected virtual void Dispose(bool disposing)
         {
-            return new ReadOnlyRepository<T>(this);
-        }
-
-        public IRepository<T> GetRepository<T>()
-                    where T : class
-        {
-            return new Repository<T>(this);
-        }
-
-        private sealed class ReadOnlyRepository<T> : ReadOnlyRepositoryBase<T>
-            where T : class
-        {
-            public ReadOnlyRepository(IRepositoryFactory factory) : base(factory)
+            if (!disposedValue)
             {
+                if (disposing)
+                {
+                    // TODO: dispose managed state (managed objects)
+                }
+
+                disposedValue = true;
             }
-
-            public override IQueryable<T> EntityQuery(DbContext context) => context.Set<T>().AsQueryable();
-        }
-
-        private sealed class Repository<T> : RepositoryBase<T>
-                    where T : class
-        {
-            public Repository(IRepositoryFactory factory) : base(factory)
-            {
-            }
-
-            public override IQueryable<T> EntityQuery(DbContext context) => context.Set<T>().AsQueryable();
-
-            public override Task HandleExpressionUpdateAsync(DbContext context, T current, T entity, CancellationToken cancellationToken = default) => Task.CompletedTask;
         }
     }
 }

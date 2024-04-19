@@ -1,5 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace EF.Core.Repositories.Extensions
 {
@@ -1515,13 +1520,13 @@ namespace EF.Core.Repositories.Extensions
 
         private static async Task<TResult> ExecuteAsync<T, TResult>(this IInternalReadOnlyRepository<T> repository, Func<IQueryable<T>, TResult> expression, CancellationToken cancellationToken = default)
         {
-            using var ctx = await repository.Factory.CreateDbContextAsync(cancellationToken);
+            var ctx = await repository.Transaction.GetDbContextAsync(cancellationToken);
             return expression(repository.EntityQuery(ctx));
         }
 
         private static async Task<TResult> ExecuteAsync<T, TResult>(this IInternalReadOnlyRepository<T> repository, Func<IQueryable<T>, Task<TResult>> expression, CancellationToken cancellationToken = default)
         {
-            using var ctx = await repository.Factory.CreateDbContextAsync(cancellationToken);
+            var ctx = await repository.Transaction.GetDbContextAsync(cancellationToken);
             return await expression(repository.EntityQuery(ctx));
         }
 

@@ -1,6 +1,10 @@
 ﻿using EF.Core.Repositories.Internal;
 using EF.Core.Repositories.Internal.Extensions;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace EF.Core.Repositories.Extensions
 {
@@ -43,8 +47,11 @@ namespace EF.Core.Repositories.Extensions
         /// If the <see cref="CancellationToken"/> is canceled.
         /// </exception>
         public static async Task<T?> GetAsync<T>(this IRepository<T> repository, object key, CancellationToken cancellationToken = default) where T : class
-            => await ((IInternalRepository<T>)repository).ExecuteAsync(async (r, ctx) =>
-                await r.GetAsync(ctx, key, cancellationToken), cancellationToken);
+            => await ((IInternalRepository<T>)repository).ExecuteAsync(async (r, t) =>
+                {
+                    var ctx = await t.GetDbContextAsync(cancellationToken);
+                    return await r.GetAsync(ctx, key, cancellationToken);
+                });
 
         private static async Task<T?> GetAsync<T>(this IInternalRepository<T> repository, DbContext context, object key, CancellationToken cancellationToken = default) where T : class
             => await new ContextQueryable<T>(repository.EntityQuery(context), context).FindAsync(key, cancellationToken);
@@ -80,11 +87,17 @@ namespace EF.Core.Repositories.Extensions
         /// If the <see cref="CancellationToken"/> is canceled.
         /// </exception>
         public static async Task<bool> DeleteAsync<T>(this IRepository<T> repository, T entity, CancellationToken cancellationToken = default) where T : class
-            => await ((IInternalRepository<T>)repository).ExecuteAsync(async (_, ctx) =>
+            => await ((IInternalRepository<T>)repository).ExecuteAsync(async (_, t) =>
             {
+                var ctx = await t.GetDbContextAsync(cancellationToken);
                 ctx.Remove(entity);
-                return (await ctx.SaveChangesAsync(cancellationToken)) > 0;
-            }, cancellationToken);
+                if (t.AutoCommit)
+                {
+                    var res = await t.CommitAsync(cancellationToken);
+                    return res.Any();
+                }
+                return true;
+            });
 
         /// <summary>
         /// Delete an entity from a repository based upon the specified key.
@@ -122,97 +135,19 @@ namespace EF.Core.Repositories.Extensions
         /// If the <see cref="CancellationToken"/> is canceled.
         /// </exception>
         public static async Task<bool> DeleteByIdAsync<T>(this IRepository<T> repository, object key, CancellationToken cancellationToken = default) where T : class
-            => await ((IInternalRepository<T>)repository).ExecuteAsync(async (r, ctx) =>
+            => await ((IInternalRepository<T>)repository).ExecuteAsync(async (r, t) =>
             {
+                var ctx = await t.GetDbContextAsync(cancellationToken);
                 var entity = await r.GetAsync(ctx, key, cancellationToken);
                 if (entity == null) return false;
                 ctx.Remove(entity);
-                return (await ctx.SaveChangesAsync(cancellationToken)) > 0;
-            }, cancellationToken);
-
-        /// <summary>
-        /// Delete multiple entities from a repository.
-        /// </summary>
-        /// <typeparam name="T">The type of the elements of <paramref name="repository"/>.</typeparam>
-        /// <param name="repository">
-        /// An <see cref="IRepository{T}"/> to delete <paramref name="entities"/> from.
-        /// </param>
-        /// <param name="entities">The entities to delete.</param>
-        /// <param name="cancellationToken">
-        /// A <see cref="CancellationToken"/> to observe while waiting for the task to complete.
-        /// </param>
-        /// <returns>
-        /// A task that represents the asynchronous operation. The task result contains <see
-        /// langword="true"/> if any entities were deleted, <see langword="false"/> if no entities
-        /// were deleted.
-        /// </returns>
-        /// <exception cref="DbUpdateException">
-        /// An error is encountered while saving to the database.
-        /// </exception>
-        /// <exception cref="DbUpdateConcurrencyException">
-        /// A concurrency violation is encountered while saving to the database. A concurrency
-        /// violation occurs when an unexpected number of rows are affected during save. This is
-        /// usually because the data in the database has been modified since it was loaded into memory.
-        /// </exception>
-        /// <exception cref="OperationCanceledException">
-        /// If the <see cref="CancellationToken"/> is canceled.
-        /// </exception>
-        public static async Task<bool> DeleteRangeAsync<T>(this IRepository<T> repository, IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class
-            => await ((IInternalRepository<T>)repository).ExecuteAsync(async (_, ctx) =>
-            {
-                ctx.RemoveRange(entities);
-                return (await ctx.SaveChangesAsync(cancellationToken)) > 0;
-            }, cancellationToken);
-
-        /// <summary>
-        /// Delete multiple entities from a repository based upon the specified keys.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// <paramref name="keys"/> must contain objects with properties that match the primary key
-        /// structure of <typeparamref name="T"/>.
-        /// </para>
-        /// <para>For an entity whose primary key is a single column (Id). Use new { Id = ? }.</para>
-        /// <para>
-        /// For an entity whose primary key has multiple columns (Id1, Id2,...). Use new { Id1 = ?,
-        /// Id2 = ?,... }.
-        /// </para>
-        /// </remarks>
-        /// <typeparam name="T">The type of the elements of <paramref name="repository"/>.</typeparam>
-        /// <param name="repository">An <see cref="IRepository{T}"/> to delete entities from.</param>
-        /// <param name="keys">
-        /// An <see cref="IEnumerable{T}"/> containing objects that specify all primary key fields.
-        /// </param>
-        /// <param name="cancellationToken">
-        /// A <see cref="CancellationToken"/> to observe while waiting for the task to complete.
-        /// </param>
-        /// <returns>
-        /// A task that represents the asynchronous operation. The task result contains <see
-        /// langword="true"/> if any entities were deleted, <see langword="false"/> if no entities
-        /// were deleted.
-        /// </returns>
-        /// <exception cref="DbUpdateException">
-        /// An error is encountered while saving to the database.
-        /// </exception>
-        /// <exception cref="DbUpdateConcurrencyException">
-        /// A concurrency violation is encountered while saving to the database. A concurrency
-        /// violation occurs when an unexpected number of rows are affected during save. This is
-        /// usually because the data in the database has been modified since it was loaded into memory.
-        /// </exception>
-        /// <exception cref="OperationCanceledException">
-        /// If the <see cref="CancellationToken"/> is canceled.
-        /// </exception>
-        public static async Task<bool> DeleteRangeByIdAsync<T>(this IRepository<T> repository, IEnumerable<object> keys, CancellationToken cancellationToken = default) where T : class
-            => await ((IInternalRepository<T>)repository).ExecuteAsync(async (r, ctx) =>
-            {
-                await Task.WhenAll(keys.Select(async key =>
+                if (t.AutoCommit)
                 {
-                    var entity = await r.GetAsync(ctx, key, cancellationToken);
-                    if (entity != null)
-                        ctx.Remove(entity);
-                }));
-                return (await ctx.SaveChangesAsync(cancellationToken)) > 0;
-            }, cancellationToken);
+                    var res = await t.CommitAsync(cancellationToken);
+                    return res.Any();
+                }
+                return true;
+            });
 
         #endregion Delete
 
@@ -242,54 +177,20 @@ namespace EF.Core.Repositories.Extensions
         /// If the <see cref="CancellationToken"/> is canceled.
         /// </exception>
         public static async Task<T?> UpdateAsync<T>(this IRepository<T> repository, T entity, CancellationToken cancellationToken = default) where T : class
-            => await ((IInternalRepository<T>)repository).ExecuteAsync(async (r, ctx) =>
+            => await ((IInternalRepository<T>)repository).ExecuteAsync(async (r, t) =>
             {
+                var ctx = await t.GetDbContextAsync(cancellationToken);
                 var current = await r.GetAsync(ctx, entity, cancellationToken);
                 if (current == null) return default;
                 ctx.Entry(current).CurrentValues.SetValues(entity);
                 await r.HandleExpressionUpdateAsync(ctx, current, entity, cancellationToken);
-                var res = await ctx.SaveChangesAsync(cancellationToken);
-                return res > 0 ? current : default;
-            }, cancellationToken);
-
-        /// <summary>
-        /// Updates entities from a repository.
-        /// </summary>
-        /// <typeparam name="T">The type of the elements of <paramref name="repository"/>.</typeparam>
-        /// <param name="repository">An <see cref="IRepository{T}"/> to update the <param name="entities"/>.</param>
-        /// <param name="entities">The entities to update.</param>
-        /// <param name="cancellationToken">
-        /// A <see cref="CancellationToken"/> to observe while waiting for the task to complete.
-        /// </param>
-        /// <returns>
-        /// A task that represents the asynchronous operation. The task result contains an array of
-        /// the updated entities.
-        /// </returns>
-        /// <exception cref="DbUpdateException">
-        /// An error is encountered while saving to the database.
-        /// </exception>
-        /// <exception cref="DbUpdateConcurrencyException">
-        /// A concurrency violation is encountered while saving to the database. A concurrency
-        /// violation occurs when an unexpected number of rows are affected during save. This is
-        /// usually because the data in the database has been modified since it was loaded into memory.
-        /// </exception>
-        /// <exception cref="OperationCanceledException">
-        /// If the <see cref="CancellationToken"/> is canceled.
-        /// </exception>
-        public static async Task<T?[]?> UpdateRangeAsync<T>(this IRepository<T> repository, IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class
-            => await ((IInternalRepository<T>)repository).ExecuteAsync(async (r, ctx) =>
-            {
-                var updates = await Task.WhenAll(entities.Select(async entity =>
+                if (t.AutoCommit)
                 {
-                    var current = await r.GetAsync(ctx, entity, cancellationToken);
-                    if (current == null) return default;
-                    ctx.Entry(current).CurrentValues.SetValues(entity);
-                    await r.HandleExpressionUpdateAsync(ctx, current, entity, cancellationToken);
-                    return current;
-                }));
-                var res = await ctx.SaveChangesAsync(cancellationToken);
-                return res > 0 ? updates : default;
-            }, cancellationToken);
+                    var res = await t.CommitAsync(cancellationToken);
+                    return res.Any() ? current : default;
+                }
+                return current;
+            });
 
         #endregion Update
 
@@ -319,59 +220,27 @@ namespace EF.Core.Repositories.Extensions
         /// If the <see cref="CancellationToken"/> is canceled.
         /// </exception>
         public static async Task<T?> InsertAsync<T>(this IRepository<T> repository, T entity, CancellationToken cancellationToken = default) where T : class
-            => await ((IInternalRepository<T>)repository).ExecuteAsync(async (_, ctx) =>
+            => await ((IInternalRepository<T>)repository).ExecuteAsync(async (_, t) =>
             {
+                var ctx = await t.GetDbContextAsync(cancellationToken);
                 var e = ctx.Attach(entity);
-                var res = await ctx.SaveChangesAsync(cancellationToken);
-                return res > 0 ? e.Entity : default;
-            }, cancellationToken);
-
-        /// <summary>
-        /// Insert entities into a repository.
-        /// </summary>
-        /// <typeparam name="T">The type of the elements of <paramref name="repository"/>.</typeparam>
-        /// <param name="repository">An <see cref="IRepository{T}"/> to insert the <param name="entities"/>.</param>
-        /// <param name="entities">The entities to insert.</param>
-        /// <param name="cancellationToken">
-        /// A <see cref="CancellationToken"/> to observe while waiting for the task to complete.
-        /// </param>
-        /// <returns>
-        /// A task that represents the asynchronous operation. The task result contains an array of
-        /// the inserted entities.
-        /// </returns>
-        /// <exception cref="DbUpdateException">
-        /// An error is encountered while saving to the database.
-        /// </exception>
-        /// <exception cref="DbUpdateConcurrencyException">
-        /// A concurrency violation is encountered while saving to the database. A concurrency
-        /// violation occurs when an unexpected number of rows are affected during save. This is
-        /// usually because the data in the database has been modified since it was loaded into memory.
-        /// </exception>
-        /// <exception cref="OperationCanceledException">
-        /// If the <see cref="CancellationToken"/> is canceled.
-        /// </exception>
-        public static async Task<T?[]?> InsertRangeAsync<T>(this IRepository<T> repository, IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class
-            => await ((IInternalRepository<T>)repository).ExecuteAsync(async (_, ctx) =>
-            {
-                var updates = await Task.WhenAll(entities.Select(entity =>
-                Task.Run(() =>
+                e.State = EntityState.Added;
+                if (t.AutoCommit)
                 {
-                    var e = ctx.Attach(entity);
-                    return e.Entity;
-                })));
-                var res = await ctx.SaveChangesAsync(cancellationToken);
-                return res > 0 ? updates : default;
-            }, cancellationToken);
+                    var res = await t.CommitAsync(cancellationToken);
+                    return res.Any() ? e.Entity : default;
+                }
+                return e.Entity;
+            });
 
         #endregion Insert
 
         #region Execute
 
-        private static async Task<TResult> ExecuteAsync<T, TResult>(this IInternalRepository<T> repository, Func<IInternalRepository<T>, DbContext, Task<TResult>> expression, CancellationToken cancellationToken = default)
+        private static async Task<TResult> ExecuteAsync<T, TResult>(this IInternalRepository<T> repository, Func<IInternalRepository<T>, IInternalTransaction, Task<TResult>> expression)
             where T : class
         {
-            using var ctx = await repository.Factory.CreateDbContextAsync(cancellationToken);
-            return await expression(repository, ctx);
+            return await expression(repository, repository.Transaction);
         }
 
         #endregion Execute
