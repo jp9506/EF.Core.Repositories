@@ -180,6 +180,18 @@ foreach (var user in users)
 
 var inserted = await transaction.CommitAsync();
 ```
+or
+```csharp
+using var transaction = _factory.CreateTransaction();
+
+var repository = transaction.GetRepository<User>();
+
+await Task.WhenAll(
+  users.Select(async user =>
+    await repository.InsertAsync(user)));
+
+var inserted = await transaction.CommitAsync();
+```
 
 ## Testing
 The EF.Core.Repositories.Test package can be used to facilitate testing.
