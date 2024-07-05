@@ -207,15 +207,13 @@ namespace EF.Core.Repositories.Extensions
         /// Asynchronously loads from an <see cref="IReadOnlyRepository{T}"/> by enumerating it asynchronously.
         /// </summary>
         /// <typeparam name="T">The type of the elements of <paramref name="repository"/>.</typeparam>
-        /// <param name="repository">
-        /// An <see cref="IReadOnlyRepository{T}"/> to create an array from.
-        /// </param>
+        /// <param name="repository">An <see cref="IReadOnlyRepository{T}"/> to retrieve data from.</param>
         /// <param name="cancellationToken">
         /// A <see cref="CancellationToken"/> to observe while waiting for the task to complete.
         /// </param>
         /// <returns>
-        /// A task that represents the asynchronous operation. The task result contains an array
-        /// that contains elements from the input repository.
+        /// A task that represents the asynchronous operation. The task result contains an <see
+        /// cref="IEnumerable{T}"/> that contains elements from the input repository.
         /// </returns>
         /// <exception cref="ArgumentNullException"><paramref name="repository"/> is <see langword="null"/>.</exception>
         /// <exception cref="OperationCanceledException">

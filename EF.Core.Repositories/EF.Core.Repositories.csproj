@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <Authors>jp9506</Authors>
     <Title>EF.Core.Repositories</Title>
-    <Version>1.1.1</Version>
+    <Version>1.1.2</Version>
     <PackageTags>Entity;Framework;Core;entity-framework-core;EF;Data;O/RM;EntityFramework;EntityFrameworkCore;EFCore;Repository</PackageTags>
     <Description>
       Extends Entity Framework Core to provide a Repository Pattern based on Linq.
