@@ -1,7 +1,9 @@
 ﻿using EF.Core.Repositories.Extensions;
+using EF.Core.Repositories.Test.Extensions;
 using EF.Core.Repositories.Test.Sql.Data;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace EF.Core.Repositories.Test.Sql
 {
@@ -12,8 +14,9 @@ namespace EF.Core.Repositories.Test.Sql
 
         public AnyAllAsync()
         {
-            _builder = IFactoryBuilder<TestContext>.Sql(Constants.CONNECTION_STRING,
-                () =>
+            _builder = IFactoryBuilder<TestContext>.Instance()
+                //.WithConnectionString(Constants.CONNECTION_STRING)
+                .WithSeed(() =>
                     Enumerable.Range(1, COUNT)
                     .Select(i => new Class
                     {
@@ -24,7 +27,7 @@ namespace EF.Core.Repositories.Test.Sql
         }
 
         [Fact]
-        public async void AllClassesNotFreeAsync()
+        public async Task AllClassesNotFreeAsync()
         {
             using var factory = await _builder.CreateFactoryAsync();
 
@@ -36,7 +39,7 @@ namespace EF.Core.Repositories.Test.Sql
         }
 
         [Fact]
-        public async void AllClassesOver50Async()
+        public async Task AllClassesOver50Async()
         {
             using var factory = await _builder.CreateFactoryAsync();
 
@@ -48,7 +51,7 @@ namespace EF.Core.Repositories.Test.Sql
         }
 
         [Fact]
-        public async void AnyClassesAsync()
+        public async Task AnyClassesAsync()
         {
             using var factory = await _builder.CreateFactoryAsync();
 
@@ -60,7 +63,7 @@ namespace EF.Core.Repositories.Test.Sql
         }
 
         [Fact]
-        public async void AnyClassesEqual49Async()
+        public async Task AnyClassesEqual49Async()
         {
             using var factory = await _builder.CreateFactoryAsync();
 
@@ -72,7 +75,7 @@ namespace EF.Core.Repositories.Test.Sql
         }
 
         [Fact]
-        public async void AnyClassesOver5000Async()
+        public async Task AnyClassesOver5000Async()
         {
             using var factory = await _builder.CreateFactoryAsync();
 
@@ -84,7 +87,7 @@ namespace EF.Core.Repositories.Test.Sql
         }
 
         [Fact]
-        public async void AnyUsersAsync()
+        public async Task AnyUsersAsync()
         {
             using var factory = await _builder.CreateFactoryAsync();
 

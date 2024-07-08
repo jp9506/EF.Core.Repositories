@@ -1,19 +1,21 @@
 ﻿using EF.Core.Repositories.Extensions;
+using EF.Core.Repositories.Test.Extensions;
 using EF.Core.Repositories.Test.Sql.Data;
 using System;
+using System.Threading.Tasks;
 
 namespace EF.Core.Repositories.Test.Sql
 {
     public class InsertAsync
     {
         private const string SUPER_USER_ID = "19E9E0C9-B5A2-449A-A08E-53D2A6483223";
-        private const string USER_ID = "12345678-1234-1234-1234-1234567890AB";
         private readonly IFactoryBuilder<TestContext> _builder;
 
         public InsertAsync()
         {
-            _builder = IFactoryBuilder<TestContext>.Sql(Constants.CONNECTION_STRING,
-                () => new[]
+            _builder = IFactoryBuilder<TestContext>.Instance()
+                //.WithConnectionString(Constants.CONNECTION_STRING)
+                .WithSeed(() => new[]
                 {
                     new User
                     {
@@ -26,7 +28,7 @@ namespace EF.Core.Repositories.Test.Sql
         }
 
         [Fact]
-        public async void InsertUserAsync()
+        public async Task InsertUserAsync()
         {
             using var factory = await _builder.CreateFactoryAsync();
 

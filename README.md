@@ -193,16 +193,37 @@ await Task.WhenAll(
 var inserted = await transaction.CommitAsync();
 ```
 
-## Testing
-The EF.Core.Repositories.Test package can be used to facilitate testing.
+## Integration Testing
+The EF.Core.Repositories.Test packages can be used to facilitate testing.
 
 ### Supported Providers
-Currently there are three data providers supported.
+Currently there are six data providers supported.
+- Cosmos Container
+    - Utilizes the EntityFrameworkCore.Cosmos provider
+    - Uses Testcontainers.CosmosDb to create a Cosmos Db Docker Container Instance
+    - Each time CreateFactoryAsync() is called a new database in the Container Instance is created and seeded
+    - Sql Factories will automatically delete the created database when disposed.
+    - Failed tests will not trigger .Dispose() when factory is wrapped in a using context.
+        - This will cause that database to survive and be available to aid in debugging test failure.
 - InMemory
     - Utilizes the EntityFrameworkCore.InMemory provider
+- PostgreSQL Container
+    - Utilizes the Npgsql.EntityFrameworkCore.PostgreSQL provider
+    - Uses Testcontainers.PostgreSql to create a PostgreSQL Docker Container Instance
+    - Each time CreateFactoryAsync() is called a new database in the Container Instance is created and seeded
+    - Sql Factories will automatically delete the created database when disposed.
+    - Failed tests will not trigger .Dispose() when factory is wrapped in a using context.
+        - This will cause that database to survive and be available to aid in debugging test failure.
 - Sqlite
     - Utilizes the EntityFrameworkCore.Sqlite provider with in memory Sqlite instances
-- Sql (*Recommended*)
+- Sql Container
+    - Utilizes the EntityFrameworkCore.SqlServer provider
+    - Uses Testcontainers.MsSql to create a Sql Server Docker Container Instance
+    - Each time CreateFactoryAsync() is called a new database in the Container Instance is created and seeded
+    - Sql Factories will automatically delete the created database when disposed.
+    - Failed tests will not trigger .Dispose() when factory is wrapped in a using context.
+        - This will cause that database to survive and be available to aid in debugging test failure.
+- Sql Instance
     - Utilizes the EntityFrameworkCore.SqlServer provider
     - A connection string must be passed to the builder method for use during tests
         - Initial Catalog parameter will be ignored if included
@@ -214,21 +235,80 @@ Currently there are three data providers supported.
 
 ### FactoryBuilders
 Each provider has an IFactoryBuilder&lt;T&gt; which uses a seed function to specify all objects that should be stored in the data source when it is initialized.
+The seeding process will automatically determine how and where to store each entity provided by the seeding function based upon the provided context.
 
 Best practice is to initialize a builder in your constructor and then create a factory to start each test.  This will result in each test using its own data source.
 
-### Example
-Testing a UserController's Add/Update endpoints
+### Examples
+
+#### Using a Docker Container
 
 ```csharp
+using EF.Core.Repositories.Extensions;
+using EF.Core.Repositories.Test.Extensions;
+
+public class MyTests
+{
+    private readonly IFactoryBuilder<MyContext> _builder;
+
+    public MyTests()
+    {
+        _builder = IFactoryBuilder<MyContext>.Instance()
+            .WithSeed(() => new object[]
+            {
+                new User
+                {
+                    Id = 1,
+                    Name = "Test User",
+                    Email = "user@test.com",
+                }
+            });
+    }
+}
+```
+
+#### Using an InMemory Provider
+
+```csharp
+using EF.Core.Repositories.Extensions;
+using EF.Core.Repositories.Test.Extensions;
+
+public class MyTests
+{
+    private readonly IFactoryBuilder<MyContext> _builder;
+
+    public MyTests()
+    {
+        _builder = IFactoryBuilder<MyContext>.Instance()
+            .WithSeed(() => new object[]
+            {
+                new User
+                {
+                    Id = 1,
+                    Name = "Test User",
+                    Email = "user@test.com",
+                }
+            });
+    }
+}
+```
+
+#### Full Example Test Class using Sql Instance
+Testing a UserController's Add/Update endpoints using Sql Instance
+
+```csharp
+using EF.Core.Repositories.Extensions;
+using EF.Core.Repositories.Test.Extensions;
+
 public class UserControllerTests
 {
     private readonly IFactoryBuilder<MyContext> _builder;
 
     public UserControllerTests()
     {
-        _builder = IFactoryBuilder<MyContext>.Sql("Server=(local);Integrated Security=true;TrustServerCertificate=true",
-            () => new object[]
+        _builder = IFactoryBuilder<MyContext>.Instance()
+            .WithConnectionString("Server=(local);Integrated Security=true;TrustServerCertificate=true")
+            .WithSeed(() => new object[]
             {
                 new User
                 {

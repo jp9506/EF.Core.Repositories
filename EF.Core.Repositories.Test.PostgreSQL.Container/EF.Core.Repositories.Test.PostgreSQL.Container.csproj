@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Authors>jp9506</Authors>
+    <Title>EF.Core.Repositories.Test.PostgreSQL.Container</Title>
+    <Version>1.1.2</Version>
+    <PackageTags>Entity;Framework;Core;entity-framework-core;EF;Data;O/RM;EntityFramework;EntityFrameworkCore;EFCore;Repository;Test;Testing</PackageTags>
+    <Description>
+      Provides testing capabilities for EF.Core.Repositories using a PostgreSQL Container.
+    </Description>
+    <PackageProjectUrl>https://github.com/jp9506/EF.Core.Repositories</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/jp9506/EF.Core.Repositories</RepositoryUrl>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <EnablePackageValidation>true</EnablePackageValidation>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\EF.Core.Repositories.Test\Base\ContainerFactoryBuilderBase.cs" Link="Base\ContainerFactoryBuilderBase.cs" />
+    <Compile Include="..\EF.Core.Repositories.Test\Base\FactoryBuilderBase.cs" Link="Base\FactoryBuilderBase.cs" />
+    <Compile Include="..\EF.Core.Repositories.Test\Base\RepositoryFactoryBase.cs" Link="Base\RepositoryFactoryBase.cs" />
+    <Compile Include="..\EF.Core.Repositories.Test\Extensions\DbContextOptionsExtensions.cs" Link="Extensions\DbContextOptionsExtensions.cs" />
+    <Compile Include="..\EF.Core.Repositories.Test\Extensions\IFactoryBuilderContainerExtensions.cs" Link="Extensions\IFactoryBuilderContainerExtensions.cs" />
+    <Compile Include="..\EF.Core.Repositories.Test\Extensions\IFactoryBuilderSeedExtensions.cs" Link="Extensions\IFactoryBuilderSeedExtensions.cs" />
+    <Compile Include="..\EF.Core.Repositories.Test\IFactoryBuilder.cs" Link="IFactoryBuilder.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md" Link="README.md" Pack="true" PackagePath="\">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.18" />
+    <PackageReference Include="Testcontainers.PostgreSql" Version="4.0.0" />
+    <ProjectReference Include="..\EF.Core.Repositories\EF.Core.Repositories.csproj" />
+    <PackageReference Include="DotNet.ReproducibleBuilds" Version="1.2.25">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+</Project>

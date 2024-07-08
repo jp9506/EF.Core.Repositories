@@ -4,7 +4,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace EF.Core.Repositories.Test
+namespace EF.Core.Repositories.Test.Base
 {
     internal abstract class RepositoryFactoryBase<TContext> : IRepositoryFactory<TContext>
         where TContext : DbContext

@@ -5,11 +5,11 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Authors>jp9506</Authors>
-    <Title>EF.Core.Repositories.Test</Title>
+    <Title>EF.Core.Repositories.Test.Sqlite</Title>
     <Version>1.1.2</Version>
     <PackageTags>Entity;Framework;Core;entity-framework-core;EF;Data;O/RM;EntityFramework;EntityFrameworkCore;EFCore;Repository;Test;Testing</PackageTags>
     <Description>
-      Provides testing capabilities for EF.Core.Repositories.
+      Provides testing capabilities for EF.Core.Repositories using Microsoft.EntityFrameworkCore.Sqlite.
     </Description>
     <PackageProjectUrl>https://github.com/jp9506/EF.Core.Repositories</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -20,12 +20,26 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\EF.Core.Repositories.Test\Base\FactoryBuilderBase.cs" Link="Base\FactoryBuilderBase.cs" />
+    <Compile Include="..\EF.Core.Repositories.Test\Base\RepositoryFactoryBase.cs" Link="Base\RepositoryFactoryBase.cs" />
+    <Compile Include="..\EF.Core.Repositories.Test\Extensions\DbContextOptionsExtensions.cs" Link="Extensions\DbContextOptionsExtensions.cs" />
+    <Compile Include="..\EF.Core.Repositories.Test\Extensions\IFactoryBuilderSeedExtensions.cs" Link="Extensions\IFactoryBuilderSeedExtensions.cs" />
+    <Compile Include="..\EF.Core.Repositories.Test\IFactoryBuilder.cs" Link="IFactoryBuilder.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md" Link="README.md" Pack="true" PackagePath="\">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.20" />
     <ProjectReference Include="..\EF.Core.Repositories\EF.Core.Repositories.csproj" />
     <PackageReference Include="DotNet.ReproducibleBuilds" Version="1.2.25">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Testcontainers" Version="4.0.0" />
   </ItemGroup>
 
 </Project>

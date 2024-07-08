@@ -1,7 +1,9 @@
 ﻿using EF.Core.Repositories.Extensions;
+using EF.Core.Repositories.Test.Extensions;
 using EF.Core.Repositories.Test.Sql.Data;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace EF.Core.Repositories.Test.Sql
 {
@@ -15,8 +17,9 @@ namespace EF.Core.Repositories.Test.Sql
 
         public UpdateAsync()
         {
-            _builder = IFactoryBuilder<TestContext>.Sql(Constants.CONNECTION_STRING,
-                () => new object[]
+            _builder = IFactoryBuilder<TestContext>.Instance()
+                //.WithConnectionString(Constants.CONNECTION_STRING)
+                .WithSeed(() => new object[]
                 {
                     new Role
                     {
@@ -58,7 +61,7 @@ namespace EF.Core.Repositories.Test.Sql
         }
 
         [Fact]
-        public async void UpdateUserAsync()
+        public async Task UpdateUserAsync()
         {
             using var factory = await _builder.CreateFactoryAsync();
 
@@ -81,7 +84,7 @@ namespace EF.Core.Repositories.Test.Sql
         }
 
         [Fact]
-        public async void UpdateUserIncludeClasses()
+        public async Task UpdateUserIncludeClasses()
         {
             using var factory = await _builder.CreateFactoryAsync();
 
@@ -119,7 +122,7 @@ namespace EF.Core.Repositories.Test.Sql
         }
 
         [Fact]
-        public async void UpdateUserIncludeRoles()
+        public async Task UpdateUserIncludeRoles()
         {
             using var factory = await _builder.CreateFactoryAsync();
 
