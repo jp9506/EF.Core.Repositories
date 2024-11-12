@@ -242,6 +242,7 @@ Best practice is to initialize a builder in your constructor and then create a f
 ### Examples
 
 #### Using a Docker Container
+Integration testing using a container is the recommended method as it does provide both an accurate representation of Database functionality and can be easily distributed.
 
 ```csharp
 using EF.Core.Repositories.Extensions;
@@ -254,6 +255,14 @@ public class MyTests
     public MyTests()
     {
         _builder = IFactoryBuilder<MyContext>.Instance()
+            .ConfigureContainerBuilder(b => 
+            {
+                // Optionally Configure Testcontainers Docker Container here
+                return b
+                    .WithPassword("DbPassword")
+                    .WithLabel("Test", "True")
+                    .WithName("ContainerImageName");
+            })
             .WithSeed(() => new object[]
             {
                 new User
@@ -268,6 +277,7 @@ public class MyTests
 ```
 
 #### Using an InMemory Provider
+In Memory Providers often do not have all functionality of their full database counterparts. Usage may result in inaccurate test results.
 
 ```csharp
 using EF.Core.Repositories.Extensions;
@@ -293,8 +303,38 @@ public class MyTests
 }
 ```
 
-#### Full Example Test Class using Sql Instance
-Testing a UserController's Add/Update endpoints using Sql Instance
+#### Using a Sql Instance
+Utilizing a physical SQL Server Instance is preferred in situations where Docker Containers are not an option. A Connection String is required for SQL Instance testing.
+Only Server/Security Information needs to be provided, the initial catalog will be auto-generated for each test.
+User will need elevated permissions to Create and Delete Databases.
+
+```csharp
+using EF.Core.Repositories.Extensions;
+using EF.Core.Repositories.Test.Extensions;
+
+public class MyTests
+{
+    private readonly IFactoryBuilder<MyContext> _builder;
+
+    public MyTests()
+    {
+        _builder = IFactoryBuilder<MyContext>.Instance()
+            .WithConnectionString("Server=(local);Integrated Security=true;TrustServerCertificate=true")
+            .WithSeed(() => new object[]
+            {
+                new User
+                {
+                    Id = 1,
+                    Name = "Test User",
+                    Email = "user@test.com",
+                }
+            });
+    }
+}
+```
+
+#### Full Example Test Class
+Testing a UserController's Add/Update endpoints
 
 ```csharp
 using EF.Core.Repositories.Extensions;
@@ -307,7 +347,6 @@ public class UserControllerTests
     public UserControllerTests()
     {
         _builder = IFactoryBuilder<MyContext>.Instance()
-            .WithConnectionString("Server=(local);Integrated Security=true;TrustServerCertificate=true")
             .WithSeed(() => new object[]
             {
                 new User
