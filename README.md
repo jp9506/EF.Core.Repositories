@@ -10,8 +10,8 @@ $ dotnet add package EF.Core.Repositories
 ```
 
 ## Requirements
-- .NET 7 or higher
-- Entity Framework Core 7.0.14+
+- .NET 8 or higher
+- Entity Framework Core 9.0.0 or higher
 
 ## Getting Started
 The Repository Factory can be registered by calling ConfigureData() extension.
@@ -49,10 +49,13 @@ public class Consumer
 ## Usage
 
 ### IReadOnlyRepository LINQ Extensions
-The majority of IQueryable Extensions are also available for IReadOnlyRepository.
+The majority of IQueryable Extensions are available.
+- AsSingleQuery()
+- AsSplitQuery()
 - Distinct()
 - Except()
 - GroupBy()
+- Include()
 - Intersect()
 - IntersectBy()
 - Join()
@@ -68,11 +71,24 @@ The majority of IQueryable Extensions are also available for IReadOnlyRepository
 - TakeWhile()
 - ThenBy()
 - ThenByDescending()
+- ThenInclude()
 - Union()
 - UnionBy()
 - Where()
 - Zip()
 
+#### Include() / ThenInclude()
+Just like when working with a DbSet exposed by a DbContext, you can include loading navigation properties of your entities.
+
+Ex. Retrieving all Users, their UserRoles, and the subsequent referenced Role
+```csharp
+var repository = _factory
+  .GetRepository<User>()
+  .Include(x => x.UserRoles)
+  .ThenInclude(x => x.Role);
+
+var users = await repository.GetAsync();
+```
 ### IReadOnlyRepository Async Extensions
 Additional Extensions that will enumerate the Repository against the DbContext.
 - AllAsync()
@@ -91,24 +107,6 @@ Additional Extensions that will enumerate the Repository against the DbContext.
 - SingleAsync()
 - SingleOrDefaultAsync()
 - SumAsync()
-
-### IRepository Extensions
-IRepository has all the extensions available to IReadOnlyRepository and adds the following.
-- Include()
-- ThenInclude()
-
-#### Include()
-Just like when working with a DbSet exposed by a DbContext, you can include loading navigation properties of your entities.
-
-Ex. Retrieving all Users, their UserRoles, and the subsequent referenced Role
-```csharp
-var repository = _factory
-  .GetRepository<User>()
-  .Include(x => x.UserRoles)
-  .ThenInclude(x => x.Role);
-
-var users = await repository.GetAsync();
-```
 
 ### IRepository Async Extensions
 IRepository has all the async extensions available to IReadOnlyRepository and adds the following.
@@ -255,7 +253,7 @@ public class MyTests
     public MyTests()
     {
         _builder = IFactoryBuilder<MyContext>.Instance()
-            .ConfigureContainerBuilder(b => 
+            .ConfigureContainerBuilder(b =>
             {
                 // Optionally Configure Testcontainers Docker Container here
                 return b
