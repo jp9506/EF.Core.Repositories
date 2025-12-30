@@ -7,18 +7,11 @@ using System.Threading.Tasks;
 
 namespace EF.Core.Repositories.Internal.Base
 {
-    internal abstract class TransactionBase : IInternalTransaction
+    internal abstract class TransactionBase(IRepositoryFactory factory) : IInternalTransaction
     {
-        private readonly IRepositoryFactory _factory;
-
+        private readonly IRepositoryFactory _factory = factory;
         private readonly SemaphoreSlim _semaphore = new(1, 1);
         private bool disposedValue;
-
-        public TransactionBase(IRepositoryFactory factory)
-        {
-            _factory = factory;
-        }
-
         public abstract bool AutoCommit { get; }
         private DbContext? DbContext { get; set; } = null;
 
@@ -92,23 +85,15 @@ namespace EF.Core.Repositories.Internal.Base
             }
         }
 
-        private sealed class ReadOnlyRepository<T> : ReadOnlyRepositoryBase<T>
-                            where T : class
+        private sealed class ReadOnlyRepository<T>(IInternalTransaction transaction) : ReadOnlyRepositoryBase<T>(transaction)
+            where T : class
         {
-            public ReadOnlyRepository(IInternalTransaction transaction) : base(transaction)
-            {
-            }
-
             public override IQueryable<T> EntityQuery(DbContext context) => context.Set<T>().AsQueryable();
         }
 
-        private sealed class Repository<T> : RepositoryBase<T>
+        private sealed class Repository<T>(IInternalTransaction transaction) : RepositoryBase<T>(transaction)
             where T : class
         {
-            public Repository(IInternalTransaction transaction) : base(transaction)
-            {
-            }
-
             public override IQueryable<T> EntityQuery(DbContext context) => context.Set<T>().AsQueryable();
 
             public override Task HandleExpressionUpdateAsync(DbContext context, T current, T entity, CancellationToken cancellationToken = default) => Task.CompletedTask;

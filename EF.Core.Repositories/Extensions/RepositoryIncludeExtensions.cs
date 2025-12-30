@@ -116,16 +116,12 @@ namespace EF.Core.Repositories.Extensions
             return new IncludeReadOnlyRepository<TEntity, TProp>(repository, expression);
         }
 
-        private sealed class IncludeCollectionReadOnlyRepository<TEntity, TProp> : IncludeReadOnlyRepositoryBase<TEntity, TProp>, IExtensibleIncludeCollectionRepository<TEntity, TProp>
+        private sealed class IncludeCollectionReadOnlyRepository<TEntity, TProp>(IReadOnlyRepository<TEntity> source, Expression<Func<TEntity, ICollection<TProp>>> expression)
+            : IncludeReadOnlyRepositoryBase<TEntity, TProp>(source), IExtensibleIncludeCollectionRepository<TEntity, TProp>
             where TEntity : class
             where TProp : class?
         {
-            private readonly Expression<Func<TEntity, ICollection<TProp>>> _expression;
-
-            public IncludeCollectionReadOnlyRepository(IReadOnlyRepository<TEntity> source, Expression<Func<TEntity, ICollection<TProp>>> expression) : base(source)
-            {
-                _expression = expression;
-            }
+            private readonly Expression<Func<TEntity, ICollection<TProp>>> _expression = expression;
 
             public override IIncludableQueryable<TEntity, ICollection<TProp>> EntityQuery(DbContext context)
             {
@@ -133,16 +129,12 @@ namespace EF.Core.Repositories.Extensions
             }
         }
 
-        private sealed class IncludeCollectionRepository<TEntity, TProp> : IncludeRepositoryBase<TEntity, TProp>, IExtensibleIncludeCollectionRepository<TEntity, TProp>
-                    where TEntity : class
+        private sealed class IncludeCollectionRepository<TEntity, TProp>(IRepository<TEntity> source, Expression<Func<TEntity, ICollection<TProp>>> expression)
+            : IncludeRepositoryBase<TEntity, TProp>(source), IExtensibleIncludeCollectionRepository<TEntity, TProp>
+            where TEntity : class
             where TProp : class?
         {
-            private readonly Expression<Func<TEntity, ICollection<TProp>>> _expression;
-
-            public IncludeCollectionRepository(IRepository<TEntity> source, Expression<Func<TEntity, ICollection<TProp>>> expression) : base(source)
-            {
-                _expression = expression;
-            }
+            private readonly Expression<Func<TEntity, ICollection<TProp>>> _expression = expression;
 
             public override IIncludableQueryable<TEntity, ICollection<TProp>> EntityQuery(DbContext context)
             {
@@ -168,16 +160,12 @@ namespace EF.Core.Repositories.Extensions
             }
         }
 
-        private sealed class IncludeReadOnlyRepository<TEntity, TProp> : IncludeReadOnlyRepositoryBase<TEntity, TProp>, IExtensibleIncludeRepository<TEntity, TProp>
+        private sealed class IncludeReadOnlyRepository<TEntity, TProp>(IReadOnlyRepository<TEntity> source, Expression<Func<TEntity, TProp>> expression)
+            : IncludeReadOnlyRepositoryBase<TEntity, TProp>(source), IExtensibleIncludeRepository<TEntity, TProp>
             where TEntity : class
             where TProp : class?
         {
-            private readonly Expression<Func<TEntity, TProp>> _expression;
-
-            public IncludeReadOnlyRepository(IReadOnlyRepository<TEntity> source, Expression<Func<TEntity, TProp>> expression) : base(source)
-            {
-                _expression = expression;
-            }
+            private readonly Expression<Func<TEntity, TProp>> _expression = expression;
 
             public override IIncludableQueryable<TEntity, TProp> EntityQuery(DbContext context)
             {
@@ -185,24 +173,19 @@ namespace EF.Core.Repositories.Extensions
             }
         }
 
-        private abstract class IncludeReadOnlyRepositoryBase<TEntity, TProp> : WrapperReadOnlyRepositoryBase<TEntity, IInternalReadOnlyRepository<TEntity>>, IInternalIncludeReadOnlyRepository<TEntity, TProp>
+        private abstract class IncludeReadOnlyRepositoryBase<TEntity, TProp>(IReadOnlyRepository<TEntity> source)
+            : WrapperReadOnlyRepositoryBase<TEntity, IInternalReadOnlyRepository<TEntity>>((IInternalReadOnlyRepository<TEntity>)source), IInternalIncludeReadOnlyRepository<TEntity, TProp>
             where TEntity : class
             where TProp : class?
         {
-            protected IncludeReadOnlyRepositoryBase(IReadOnlyRepository<TEntity> source) : base((IInternalReadOnlyRepository<TEntity>)source)
-            { }
         }
 
-        private sealed class IncludeRepository<TEntity, TProp> : IncludeRepositoryBase<TEntity, TProp>, IExtensibleIncludeRepository<TEntity, TProp>
+        private sealed class IncludeRepository<TEntity, TProp>(IRepository<TEntity> source, Expression<Func<TEntity, TProp>> expression)
+            : IncludeRepositoryBase<TEntity, TProp>(source), IExtensibleIncludeRepository<TEntity, TProp>
             where TEntity : class
             where TProp : class?
         {
-            private readonly Expression<Func<TEntity, TProp>> _expression;
-
-            public IncludeRepository(IRepository<TEntity> source, Expression<Func<TEntity, TProp>> expression) : base(source)
-            {
-                _expression = expression;
-            }
+            private readonly Expression<Func<TEntity, TProp>> _expression = expression;
 
             public override IIncludableQueryable<TEntity, TProp> EntityQuery(DbContext context)
             {
@@ -223,14 +206,11 @@ namespace EF.Core.Repositories.Extensions
             }
         }
 
-        private abstract class IncludeRepositoryBase<TEntity, TProp> : WrapperRepositoryBase<TEntity, IInternalRepository<TEntity>>, IInternalIncludeRepository<TEntity, TProp>
+        private abstract class IncludeRepositoryBase<TEntity, TProp>(IRepository<TEntity> source)
+            : WrapperRepositoryBase<TEntity, IInternalRepository<TEntity>>((IInternalRepository<TEntity>)source), IInternalIncludeRepository<TEntity, TProp>
             where TEntity : class
             where TProp : class?
         {
-            protected IncludeRepositoryBase(IRepository<TEntity> source) : base((IInternalRepository<TEntity>)source)
-            {
-            }
-
             public abstract Task HandleExpressionUpdateAsync(DbContext context, TEntity current, TEntity entity, Func<TProp, TProp, Task> then, CancellationToken cancellationToken = default);
 
             public override async Task HandleExpressionUpdateAsync(DbContext context, TEntity current, TEntity entity, CancellationToken cancellationToken = default)

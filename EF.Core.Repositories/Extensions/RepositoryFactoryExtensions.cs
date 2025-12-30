@@ -40,21 +40,13 @@ namespace EF.Core.Repositories.Extensions
             return transaction.GetRepository<T>();
         }
 
-        internal sealed class AutoTransaction : TransactionBase
+        internal sealed class AutoTransaction(IRepositoryFactory factory) : TransactionBase(factory)
         {
-            public AutoTransaction(IRepositoryFactory factory) : base(factory)
-            {
-            }
-
             public override bool AutoCommit => true;
         }
 
-        internal sealed class Transaction : TransactionBase
+        internal sealed class Transaction(IRepositoryFactory factory) : TransactionBase(factory)
         {
-            public Transaction(IRepositoryFactory factory) : base(factory)
-            {
-            }
-
             public override bool AutoCommit => false;
         }
     }

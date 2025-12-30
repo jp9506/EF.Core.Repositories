@@ -9,9 +9,6 @@ namespace EF.Core.Repositories.Test.Base
     internal abstract class FactoryBuilderBase<TContext> : IFactoryBuilder<TContext>
         where TContext : DbContext
     {
-        public FactoryBuilderBase()
-        { }
-
         internal Func<string> GetConnectionString { get; set; } = () => "";
         internal Func<CancellationToken, Task<IEnumerable<object>>>? GetSeed { get; set; }
 
@@ -21,7 +18,7 @@ namespace EF.Core.Repositories.Test.Base
             using var context = await factory.GetDbContextAsync(cancellationToken);
             await context.Database.EnsureDeletedAsync(cancellationToken);
             await context.Database.EnsureCreatedAsync(cancellationToken);
-            await SeedDataAsync(context);
+            await SeedDataAsync(context, cancellationToken);
             return factory;
         }
 
@@ -30,7 +27,7 @@ namespace EF.Core.Repositories.Test.Base
         protected virtual async Task SeedDataAsync(TContext context, CancellationToken cancellationToken = default)
         {
             if (GetSeed != null)
-                await context.AddRangeAsync(await GetSeed(cancellationToken));
+                await context.AddRangeAsync(await GetSeed(cancellationToken), cancellationToken);
             await context.SaveChangesAsync(cancellationToken);
         }
     }

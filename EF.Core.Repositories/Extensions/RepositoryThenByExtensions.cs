@@ -32,7 +32,7 @@ namespace EF.Core.Repositories.Extensions
         /// </exception>
         public static IOrderedRepository<T> ThenBy<T, TKey>(this IOrderedRepository<T> repository, Expression<Func<T, TKey>> keySelector)
         {
-            return new ThenOrderedRepository<T, TKey>(repository, keySelector, true);
+            return new ThenOrderedRepository<T, TKey>(repository, keySelector, null, true);
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace EF.Core.Repositories.Extensions
         /// </exception>
         public static IOrderedRepository<T> ThenByDescending<T, TKey>(this IOrderedRepository<T> repository, Expression<Func<T, TKey>> keySelector)
         {
-            return new ThenOrderedRepository<T, TKey>(repository, keySelector, false);
+            return new ThenOrderedRepository<T, TKey>(repository, keySelector, null, false);
         }
 
         /// <summary>
@@ -108,25 +108,12 @@ namespace EF.Core.Repositories.Extensions
             return new ThenOrderedRepository<T, TKey>(repository, keySelector, comparer, false);
         }
 
-        private sealed class ThenOrderedRepository<T, TKey> : WrapperReadOnlyRepositoryBase<T, IInternalOrderedRepository<T>>, IInternalOrderedRepository<T>
+        private sealed class ThenOrderedRepository<T, TKey>(IOrderedRepository<T> source, Expression<Func<T, TKey>> keySelector, IComparer<TKey>? comparer, bool ascending)
+            : WrapperReadOnlyRepositoryBase<T, IInternalOrderedRepository<T>>((IInternalOrderedRepository<T>)source), IInternalOrderedRepository<T>
         {
-            private readonly bool _ascending;
-            private readonly IComparer<TKey>? _comparer;
-            private readonly Expression<Func<T, TKey>> _keySelector;
-
-            public ThenOrderedRepository(IOrderedRepository<T> source, Expression<Func<T, TKey>> keySelector, bool ascending) : base((IInternalOrderedRepository<T>)source)
-            {
-                _keySelector = keySelector;
-                _ascending = ascending;
-                _comparer = null;
-            }
-
-            public ThenOrderedRepository(IOrderedRepository<T> source, Expression<Func<T, TKey>> keySelector, IComparer<TKey>? comparer, bool ascending) : base((IInternalOrderedRepository<T>)source)
-            {
-                _keySelector = keySelector;
-                _ascending = ascending;
-                _comparer = comparer;
-            }
+            private readonly bool _ascending = ascending;
+            private readonly IComparer<TKey>? _comparer = comparer;
+            private readonly Expression<Func<T, TKey>> _keySelector = keySelector;
 
             public IOrderedQueryable<T> EntityOrdered(DbContext context)
             {

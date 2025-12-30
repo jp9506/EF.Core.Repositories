@@ -10,9 +10,6 @@ namespace EF.Core.Repositories.Test.Sql.Container
     internal class SqlFactoryBuilder<TContext> : ContainerFactoryBuilderBase<TContext, MsSqlBuilder, MsSqlContainer, MsSqlConfiguration>
         where TContext : DbContext
     {
-        public SqlFactoryBuilder()
-        { }
-
         protected override IRepositoryFactory<TContext> GetFactory() => new SqlRepositoryFactory<TContext>(GetHost());
 
         protected override async Task SeedDataAsync(TContext context, CancellationToken cancellationToken = default)

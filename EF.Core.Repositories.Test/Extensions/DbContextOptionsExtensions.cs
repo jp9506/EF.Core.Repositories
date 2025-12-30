@@ -8,8 +8,8 @@ namespace EF.Core.Repositories.Test.Extensions
         public static TContext NewDbContext<TContext>(this DbContextOptions<TContext> options)
             where TContext : DbContext
         {
-            var ci = typeof(TContext).GetConstructor(new Type[] { typeof(DbContextOptions<TContext>) });
-            if (ci?.Invoke(new[] { options }) is not TContext ctx)
+            var ci = typeof(TContext).GetConstructor([typeof(DbContextOptions<TContext>)]);
+            if (ci?.Invoke([options]) is not TContext ctx)
             {
                 throw new InvalidOperationException($"Type {typeof(TContext).FullName} does not have constructor accepting an argument of type {typeof(DbContextOptions<TContext>).FullName}.");
             }

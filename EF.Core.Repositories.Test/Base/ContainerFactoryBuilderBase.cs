@@ -13,7 +13,6 @@ namespace EF.Core.Repositories.Test.Base
         where TConfiguration : IContainerConfiguration
     {
         private static readonly object _hostLock = new();
-
         private static Func<TBuilder, TBuilder>? ConfigureBuilderFunc { get; set; }
         private static THost? Host { get; set; }
 

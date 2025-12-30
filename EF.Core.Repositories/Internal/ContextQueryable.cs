@@ -7,19 +7,13 @@ using System.Linq.Expressions;
 
 namespace EF.Core.Repositories.Internal
 {
-    internal class ContextQueryable<T> : IContextQueryable<T>
+    internal class ContextQueryable<T>(IQueryable<T> source, DbContext context) : IContextQueryable<T>
     {
-        public ContextQueryable(IQueryable<T> source, DbContext context)
-        {
-            Source = source;
-            Context = context;
-        }
-
-        public DbContext Context { get; }
+        public DbContext Context { get; } = context;
         public Type ElementType => Source.ElementType;
         public Expression Expression => Source.Expression;
         public IQueryProvider Provider => Source.Provider;
-        private IQueryable<T> Source { get; }
+        private IQueryable<T> Source { get; } = source;
 
         public IEnumerator<T> GetEnumerator() => Source.GetEnumerator();
 

@@ -1,21 +1,13 @@
 ﻿namespace EF.Core.Repositories.Internal.Base
 {
-    internal abstract class WrapperReadOnlyRepositoryBase<T, TSource> : WrapperReadOnlyRepositoryBase<T, TSource, T>
+    internal abstract class WrapperReadOnlyRepositoryBase<T, TSource>(TSource source) : WrapperReadOnlyRepositoryBase<T, TSource, T>(source)
         where TSource : IInternalReadOnlyRepository<T>
     {
-        protected WrapperReadOnlyRepositoryBase(TSource source) : base(source)
-        {
-        }
     }
 
-    internal abstract class WrapperReadOnlyRepositoryBase<T, TSource, TResult> : ReadOnlyRepositoryBase<TResult>
+    internal abstract class WrapperReadOnlyRepositoryBase<T, TSource, TResult>(TSource source) : ReadOnlyRepositoryBase<TResult>(source.Transaction)
         where TSource : IInternalReadOnlyRepository<T>
     {
-        protected readonly TSource _internalSource;
-
-        protected WrapperReadOnlyRepositoryBase(TSource source) : base(source.Transaction)
-        {
-            _internalSource = source;
-        }
+        protected readonly TSource _internalSource = source;
     }
 }

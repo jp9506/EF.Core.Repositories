@@ -3,14 +3,9 @@ using System.Linq;
 
 namespace EF.Core.Repositories.Internal.Base
 {
-    internal abstract class ReadOnlyRepositoryBase<T> : IInternalReadOnlyRepository<T>
+    internal abstract class ReadOnlyRepositoryBase<T>(IInternalTransaction transaction) : IInternalReadOnlyRepository<T>
     {
-        protected ReadOnlyRepositoryBase(IInternalTransaction transaction)
-        {
-            Transaction = transaction;
-        }
-
-        public IInternalTransaction Transaction { get; }
+        public IInternalTransaction Transaction { get; } = transaction;
 
         public abstract IQueryable<T> EntityQuery(DbContext context);
     }

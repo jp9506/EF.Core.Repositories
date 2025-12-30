@@ -6,9 +6,6 @@ namespace EF.Core.Repositories.Test.Sqlite
     internal class SqliteFactoryBuilder<TContext> : FactoryBuilderBase<TContext>
         where TContext : DbContext
     {
-        public SqliteFactoryBuilder()
-        { }
-
         protected override IRepositoryFactory<TContext> GetFactory() => new SqliteRepositoryFactory<TContext>();
     }
 }

@@ -66,27 +66,11 @@ namespace EF.Core.Repositories.Extensions
             return new ExceptRepository<T>(source1, source2, comparer);
         }
 
-        private sealed class ExceptRepository<T> : WrapperReadOnlyRepositoryBase<T, IInternalReadOnlyRepository<T>>
+        private sealed class ExceptRepository<T>(IReadOnlyRepository<T> source1, IReadOnlyRepository<T> source2, IEqualityComparer<T>? comparer = null)
+            : WrapperReadOnlyRepositoryBase<T, IInternalReadOnlyRepository<T>>((IInternalReadOnlyRepository<T>)source1)
         {
-            private readonly IEqualityComparer<T>? _comparer;
-            private readonly IInternalReadOnlyRepository<T> _internalSource2;
-
-            public ExceptRepository(
-                IReadOnlyRepository<T> source1,
-                IReadOnlyRepository<T> source2) : base((IInternalReadOnlyRepository<T>)source1)
-            {
-                _comparer = null;
-                _internalSource2 = (IInternalReadOnlyRepository<T>)source2;
-            }
-
-            public ExceptRepository(
-                IReadOnlyRepository<T> source1,
-                IReadOnlyRepository<T> source2,
-                IEqualityComparer<T>? comparer) : base((IInternalReadOnlyRepository<T>)source1)
-            {
-                _comparer = comparer;
-                _internalSource2 = (IInternalReadOnlyRepository<T>)source2;
-            }
+            private readonly IEqualityComparer<T>? _comparer = comparer;
+            private readonly IInternalReadOnlyRepository<T> _internalSource2 = (IInternalReadOnlyRepository<T>)source2;
 
             public override IQueryable<T> EntityQuery(DbContext context)
             {

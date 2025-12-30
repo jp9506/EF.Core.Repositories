@@ -44,19 +44,10 @@ namespace EF.Core.Repositories.Extensions
             return new DistinctRepository<T>(repository, comparer);
         }
 
-        private sealed class DistinctRepository<T> : WrapperReadOnlyRepositoryBase<T, IInternalReadOnlyRepository<T>>
+        private sealed class DistinctRepository<T>(IReadOnlyRepository<T> source, IEqualityComparer<T>? comparer = null)
+            : WrapperReadOnlyRepositoryBase<T, IInternalReadOnlyRepository<T>>((IInternalReadOnlyRepository<T>)source)
         {
-            private readonly IEqualityComparer<T>? _comparer;
-
-            public DistinctRepository(IReadOnlyRepository<T> source) : base((IInternalReadOnlyRepository<T>)source)
-            {
-                _comparer = null;
-            }
-
-            public DistinctRepository(IReadOnlyRepository<T> source, IEqualityComparer<T>? comparer) : base((IInternalReadOnlyRepository<T>)source)
-            {
-                _comparer = comparer;
-            }
+            private readonly IEqualityComparer<T>? _comparer = comparer;
 
             public override IQueryable<T> EntityQuery(DbContext context)
             {
