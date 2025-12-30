@@ -12,18 +12,26 @@ namespace EF.Core.Repositories.Test.Base
         where THost : DockerContainer, IContainer
         where TConfiguration : IContainerConfiguration
     {
-        private readonly object _hostLock = new();
+        private static readonly object _hostLock = new();
 
-        internal Func<TBuilder, TBuilder>? ConfigureBuilderFunc { get; set; }
-        private THost? Host { get; set; }
+        private static Func<TBuilder, TBuilder>? ConfigureBuilderFunc { get; set; }
+        private static THost? Host { get; set; }
 
-        protected THost GetHost()
+        internal static void SetConfigureBuilderFunc(Func<TBuilder, TBuilder> configureBuilderFunc)
+        {
+            lock (_hostLock)
+            {
+                ConfigureBuilderFunc = configureBuilderFunc;
+            }
+        }
+
+        protected static THost GetHost()
         {
             EnsureHostStarted();
             return Host!;
         }
 
-        private void EnsureHostStarted()
+        private static void EnsureHostStarted()
         {
             lock (_hostLock)
             {
@@ -35,7 +43,7 @@ namespace EF.Core.Repositories.Test.Base
             }
         }
 
-        private TBuilder GetBuilder()
+        private static TBuilder GetBuilder()
         {
             var builder = new TBuilder();
             builder = ConfigureBuilderFunc?.Invoke(builder) ?? builder;

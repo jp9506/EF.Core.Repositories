@@ -63,12 +63,14 @@ namespace EF.Core.Repositories.Test.Extensions
                 cancellationToken);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "EF1002:Risk of vulnerability to SQL injection.", Justification = "Script is safe from injection")]
         private static async Task SetForeignKeyConstraintsAsync(DbContext context, bool enable, CancellationToken cancellationToken)
         {
             var value = enable ? "CHECK" : "NOCHECK";
             await context.Database.ExecuteSqlRawAsync($"EXEC sp_MSforeachtable \"ALTER TABLE ? {value} CONSTRAINT ALL\"", cancellationToken);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "EF1002:Risk of vulnerability to SQL injection.", Justification = "Script is safe from injection")]
         private static async Task SetIdentityInsertAsync(IEntityType entityType, DbContext context, bool enable, CancellationToken cancellationToken)
         {
             var value = enable ? "ON" : "OFF";
