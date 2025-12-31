@@ -1,7 +1,9 @@
 ﻿using EF.Core.Repositories.Extensions;
+using EF.Core.Repositories.Test.Extensions;
 using EF.Core.Repositories.Test.Sql.Data;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace EF.Core.Repositories.Test.Sql
 {
@@ -64,8 +66,9 @@ namespace EF.Core.Repositories.Test.Sql
 
         public GetAsync()
         {
-            _builder = IFactoryBuilder<TestContext>.Sql(Constants.CONNECTION_STRING,
-                () =>
+            _builder = IFactoryBuilder<TestContext>.Instance()
+                //.WithConnectionString(Constants.CONNECTION_STRING)
+                .WithSeed(() =>
                     Ids.Select((x, i) => new User
                     {
                         Email = $"user-{i}@test.com",
@@ -86,7 +89,7 @@ namespace EF.Core.Repositories.Test.Sql
         }
 
         [Fact]
-        public async void GetAllUsersAsync()
+        public async Task GetAllUsersAsync()
         {
             using var factory = await _builder.CreateFactoryAsync();
 
@@ -99,7 +102,7 @@ namespace EF.Core.Repositories.Test.Sql
         }
 
         [Fact]
-        public async void GetUserByIdAsync()
+        public async Task GetUserByIdAsync()
         {
             using var factory = await _builder.CreateFactoryAsync();
 
@@ -115,7 +118,7 @@ namespace EF.Core.Repositories.Test.Sql
         }
 
         [Fact]
-        public async void GetUserByIdAsync_NotFound()
+        public async Task GetUserByIdAsync_NotFound()
         {
             using var factory = await _builder.CreateFactoryAsync();
 

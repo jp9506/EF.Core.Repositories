@@ -240,32 +240,12 @@ namespace EF.Core.Repositories.Extensions
             return new UnionByRepository<T, TKey>(source1, source2, keySelector, comparer);
         }
 
-        private sealed class IntersectByRepository<T, TKey> : WrapperReadOnlyRepositoryBase<T, IInternalReadOnlyRepository<T>>
+        private sealed class IntersectByRepository<T, TKey>(IReadOnlyRepository<T> source1, IReadOnlyRepository<TKey> source2, Expression<Func<T, TKey>> keySelector, IEqualityComparer<TKey>? comparer = null)
+            : WrapperReadOnlyRepositoryBase<T, IInternalReadOnlyRepository<T>>((IInternalReadOnlyRepository<T>)source1)
         {
-            private readonly IEqualityComparer<TKey>? _comparer;
-            private readonly IInternalReadOnlyRepository<TKey> _internalSource2;
-            private readonly Expression<Func<T, TKey>> _keySelector;
-
-            public IntersectByRepository(
-                IReadOnlyRepository<T> source1,
-                IReadOnlyRepository<TKey> source2,
-                Expression<Func<T, TKey>> keySelector) : base((IInternalReadOnlyRepository<T>)source1)
-            {
-                _internalSource2 = (IInternalReadOnlyRepository<TKey>)source2;
-                _keySelector = keySelector;
-                _comparer = null;
-            }
-
-            public IntersectByRepository(
-                IReadOnlyRepository<T> source1,
-                IReadOnlyRepository<TKey> source2,
-                Expression<Func<T, TKey>> keySelector,
-                IEqualityComparer<TKey>? comparer) : base((IInternalReadOnlyRepository<T>)source1)
-            {
-                _internalSource2 = (IInternalReadOnlyRepository<TKey>)source2;
-                _keySelector = keySelector;
-                _comparer = comparer;
-            }
+            private readonly IEqualityComparer<TKey>? _comparer = comparer;
+            private readonly IInternalReadOnlyRepository<TKey> _internalSource2 = (IInternalReadOnlyRepository<TKey>)source2;
+            private readonly Expression<Func<T, TKey>> _keySelector = keySelector;
 
             public override IQueryable<T> EntityQuery(DbContext context)
             {
@@ -281,27 +261,11 @@ namespace EF.Core.Repositories.Extensions
             }
         }
 
-        private sealed class IntersectRepository<T> : WrapperReadOnlyRepositoryBase<T, IInternalReadOnlyRepository<T>>
+        private sealed class IntersectRepository<T>(IReadOnlyRepository<T> source1, IReadOnlyRepository<T> source2, IEqualityComparer<T>? comparer = null)
+            : WrapperReadOnlyRepositoryBase<T, IInternalReadOnlyRepository<T>>((IInternalReadOnlyRepository<T>)source1)
         {
-            private readonly IEqualityComparer<T>? _comparer;
-            private readonly IInternalReadOnlyRepository<T> _internalSource2;
-
-            public IntersectRepository(
-                IReadOnlyRepository<T> source1,
-                IReadOnlyRepository<T> source2) : base((IInternalReadOnlyRepository<T>)source1)
-            {
-                _internalSource2 = (IInternalReadOnlyRepository<T>)source2;
-                _comparer = null;
-            }
-
-            public IntersectRepository(
-                IReadOnlyRepository<T> source1,
-                IReadOnlyRepository<T> source2,
-                IEqualityComparer<T>? comparer) : base((IInternalReadOnlyRepository<T>)source1)
-            {
-                _internalSource2 = (IInternalReadOnlyRepository<T>)source2;
-                _comparer = comparer;
-            }
+            private readonly IEqualityComparer<T>? _comparer = comparer;
+            private readonly IInternalReadOnlyRepository<T> _internalSource2 = (IInternalReadOnlyRepository<T>)source2;
 
             public override IQueryable<T> EntityQuery(DbContext context)
             {
@@ -315,32 +279,12 @@ namespace EF.Core.Repositories.Extensions
             }
         }
 
-        private sealed class UnionByRepository<T, TKey> : WrapperReadOnlyRepositoryBase<T, IInternalReadOnlyRepository<T>>
+        private sealed class UnionByRepository<T, TKey>(IReadOnlyRepository<T> source1, IReadOnlyRepository<T> source2, Expression<Func<T, TKey>> keySelector, IEqualityComparer<TKey>? comparer = null)
+            : WrapperReadOnlyRepositoryBase<T, IInternalReadOnlyRepository<T>>((IInternalReadOnlyRepository<T>)source1)
         {
-            private readonly IEqualityComparer<TKey>? _comparer;
-            private readonly IInternalReadOnlyRepository<T> _internalSource2;
-            private readonly Expression<Func<T, TKey>> _keySelector;
-
-            public UnionByRepository(
-                IReadOnlyRepository<T> source1,
-                IReadOnlyRepository<T> source2,
-                Expression<Func<T, TKey>> keySelector) : base((IInternalReadOnlyRepository<T>)source1)
-            {
-                _internalSource2 = (IInternalReadOnlyRepository<T>)source2;
-                _keySelector = keySelector;
-                _comparer = null;
-            }
-
-            public UnionByRepository(
-                IReadOnlyRepository<T> source1,
-                IReadOnlyRepository<T> source2,
-                Expression<Func<T, TKey>> keySelector,
-                IEqualityComparer<TKey>? comparer) : base((IInternalReadOnlyRepository<T>)source1)
-            {
-                _internalSource2 = (IInternalReadOnlyRepository<T>)source2;
-                _keySelector = keySelector;
-                _comparer = comparer;
-            }
+            private readonly IEqualityComparer<TKey>? _comparer = comparer;
+            private readonly IInternalReadOnlyRepository<T> _internalSource2 = (IInternalReadOnlyRepository<T>)source2;
+            private readonly Expression<Func<T, TKey>> _keySelector = keySelector;
 
             public override IQueryable<T> EntityQuery(DbContext context)
             {
@@ -356,27 +300,11 @@ namespace EF.Core.Repositories.Extensions
             }
         }
 
-        private sealed class UnionRepository<T> : WrapperReadOnlyRepositoryBase<T, IInternalReadOnlyRepository<T>>
+        private sealed class UnionRepository<T>(IReadOnlyRepository<T> source1, IReadOnlyRepository<T> source2, IEqualityComparer<T>? comparer = null)
+            : WrapperReadOnlyRepositoryBase<T, IInternalReadOnlyRepository<T>>((IInternalReadOnlyRepository<T>)source1)
         {
-            private readonly IEqualityComparer<T>? _comparer;
-            private readonly IInternalReadOnlyRepository<T> _internalSource2;
-
-            public UnionRepository(
-                IReadOnlyRepository<T> source1,
-                IReadOnlyRepository<T> source2) : base((IInternalReadOnlyRepository<T>)source1)
-            {
-                _internalSource2 = (IInternalReadOnlyRepository<T>)source2;
-                _comparer = null;
-            }
-
-            public UnionRepository(
-                IReadOnlyRepository<T> source1,
-                IReadOnlyRepository<T> source2,
-                IEqualityComparer<T>? comparer) : base((IInternalReadOnlyRepository<T>)source1)
-            {
-                _internalSource2 = (IInternalReadOnlyRepository<T>)source2;
-                _comparer = comparer;
-            }
+            private readonly IEqualityComparer<T>? _comparer = comparer;
+            private readonly IInternalReadOnlyRepository<T> _internalSource2 = (IInternalReadOnlyRepository<T>)source2;
 
             public override IQueryable<T> EntityQuery(DbContext context)
             {

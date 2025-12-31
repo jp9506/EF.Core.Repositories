@@ -4,13 +4,9 @@ using System.Threading.Tasks;
 
 namespace EF.Core.Repositories.Internal.Base
 {
-    internal abstract class RepositoryBase<T> : ReadOnlyRepositoryBase<T>, IInternalRepository<T>
+    internal abstract class RepositoryBase<T>(IInternalTransaction transaction) : ReadOnlyRepositoryBase<T>(transaction), IInternalRepository<T>
         where T : class
     {
-        protected RepositoryBase(IInternalTransaction transaction) : base(transaction)
-        {
-        }
-
         public abstract Task HandleExpressionUpdateAsync(DbContext context, T current, T entity, CancellationToken cancellationToken = default);
     }
 }

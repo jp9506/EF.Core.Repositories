@@ -96,42 +96,14 @@ namespace EF.Core.Repositories.Extensions
             return new JoinRepository<TOuter, TInner, TKey, TResult>(outer, inner, outerKeySelector, innerKeySelector, resultSelector, comparer);
         }
 
-        private sealed class JoinRepository<TOuter, TInner, TKey, TResult> : WrapperReadOnlyRepositoryBase<TOuter, IInternalReadOnlyRepository<TOuter>, TResult>
+        private sealed class JoinRepository<TOuter, TInner, TKey, TResult>(IReadOnlyRepository<TOuter> outer, IReadOnlyRepository<TInner> inner, Expression<Func<TOuter, TKey>> outerKeySelector, Expression<Func<TInner, TKey>> innerKeySelector, Expression<Func<TOuter, TInner, TResult>> resultSelector, IEqualityComparer<TKey>? comparer = null)
+            : WrapperReadOnlyRepositoryBase<TOuter, IInternalReadOnlyRepository<TOuter>, TResult>((IInternalReadOnlyRepository<TOuter>)outer)
         {
-            private readonly IEqualityComparer<TKey>? _comparer;
-            private readonly Expression<Func<TInner, TKey>> _innerKeySelector;
-            private readonly IInternalReadOnlyRepository<TInner> _internalInner;
-            private readonly Expression<Func<TOuter, TKey>> _outerKeySelector;
-            private readonly Expression<Func<TOuter, TInner, TResult>> _resultSelector;
-
-            public JoinRepository(
-                IReadOnlyRepository<TOuter> outer,
-                IReadOnlyRepository<TInner> inner,
-                Expression<Func<TOuter, TKey>> outerKeySelector,
-                Expression<Func<TInner, TKey>> innerKeySelector,
-                Expression<Func<TOuter, TInner, TResult>> resultSelector) : base((IInternalReadOnlyRepository<TOuter>)outer)
-            {
-                _innerKeySelector = innerKeySelector;
-                _internalInner = (IInternalReadOnlyRepository<TInner>)inner;
-                _outerKeySelector = outerKeySelector;
-                _resultSelector = resultSelector;
-                _comparer = null;
-            }
-
-            public JoinRepository(
-                IReadOnlyRepository<TOuter> outer,
-                IReadOnlyRepository<TInner> inner,
-                Expression<Func<TOuter, TKey>> outerKeySelector,
-                Expression<Func<TInner, TKey>> innerKeySelector,
-                Expression<Func<TOuter, TInner, TResult>> resultSelector,
-                IEqualityComparer<TKey>? comparer) : base((IInternalReadOnlyRepository<TOuter>)outer)
-            {
-                _innerKeySelector = innerKeySelector;
-                _internalInner = (IInternalReadOnlyRepository<TInner>)inner;
-                _outerKeySelector = outerKeySelector;
-                _resultSelector = resultSelector;
-                _comparer = comparer;
-            }
+            private readonly IEqualityComparer<TKey>? _comparer = comparer;
+            private readonly Expression<Func<TInner, TKey>> _innerKeySelector = innerKeySelector;
+            private readonly IInternalReadOnlyRepository<TInner> _internalInner = (IInternalReadOnlyRepository<TInner>)inner;
+            private readonly Expression<Func<TOuter, TKey>> _outerKeySelector = outerKeySelector;
+            private readonly Expression<Func<TOuter, TInner, TResult>> _resultSelector = resultSelector;
 
             public override IQueryable<TResult> EntityQuery(DbContext context)
             {

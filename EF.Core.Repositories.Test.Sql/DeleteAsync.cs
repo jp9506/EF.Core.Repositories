@@ -1,7 +1,9 @@
 ﻿using EF.Core.Repositories.Extensions;
+using EF.Core.Repositories.Test.Extensions;
 using EF.Core.Repositories.Test.Sql.Data;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace EF.Core.Repositories.Test.Sql
 {
@@ -13,8 +15,9 @@ namespace EF.Core.Repositories.Test.Sql
 
         public DeleteAsync()
         {
-            _builder = IFactoryBuilder<TestContext>.Sql(Constants.CONNECTION_STRING,
-                () =>
+            _builder = IFactoryBuilder<TestContext>.Instance()
+                //.WithConnectionString(Constants.CONNECTION_STRING)
+                .WithSeed(() =>
                     Enumerable.Range(1, USER_COUNT - 1)
                         .Select(i => new User
                         {
@@ -36,7 +39,7 @@ namespace EF.Core.Repositories.Test.Sql
         }
 
         [Fact]
-        public async void DeleteUserAsync()
+        public async Task DeleteUserAsync()
         {
             using var factory = await _builder.CreateFactoryAsync();
 
@@ -57,7 +60,7 @@ namespace EF.Core.Repositories.Test.Sql
         }
 
         [Fact]
-        public async void DeleteUserByIdAsync()
+        public async Task DeleteUserByIdAsync()
         {
             using var factory = await _builder.CreateFactoryAsync();
 

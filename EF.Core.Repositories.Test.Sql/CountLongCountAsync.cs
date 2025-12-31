@@ -1,7 +1,9 @@
 ﻿using EF.Core.Repositories.Extensions;
+using EF.Core.Repositories.Test.Extensions;
 using EF.Core.Repositories.Test.Sql.Data;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace EF.Core.Repositories.Test.Sql
 {
@@ -12,8 +14,9 @@ namespace EF.Core.Repositories.Test.Sql
 
         public CountLongCountAsync()
         {
-            _builder = IFactoryBuilder<TestContext>.Sql(Constants.CONNECTION_STRING,
-                () =>
+            _builder = IFactoryBuilder<TestContext>.Instance()
+                //.WithConnectionString(Constants.CONNECTION_STRING)
+                .WithSeed(() =>
                     Enumerable.Range(1, COUNT)
                     .Select(i => new Class
                     {
@@ -24,7 +27,7 @@ namespace EF.Core.Repositories.Test.Sql
         }
 
         [Fact]
-        public async void AllClassesCost50CountAsync()
+        public async Task AllClassesCost50CountAsync()
         {
             using var factory = await _builder.CreateFactoryAsync();
 
@@ -36,7 +39,7 @@ namespace EF.Core.Repositories.Test.Sql
         }
 
         [Fact]
-        public async void AllClassesCost50LongCountAsync()
+        public async Task AllClassesCost50LongCountAsync()
         {
             using var factory = await _builder.CreateFactoryAsync();
 
@@ -48,7 +51,7 @@ namespace EF.Core.Repositories.Test.Sql
         }
 
         [Fact]
-        public async void AllClassesCountAsync()
+        public async Task AllClassesCountAsync()
         {
             using var factory = await _builder.CreateFactoryAsync();
 
@@ -60,7 +63,7 @@ namespace EF.Core.Repositories.Test.Sql
         }
 
         [Fact]
-        public async void AllClassesLongCountAsync()
+        public async Task AllClassesLongCountAsync()
         {
             using var factory = await _builder.CreateFactoryAsync();
 

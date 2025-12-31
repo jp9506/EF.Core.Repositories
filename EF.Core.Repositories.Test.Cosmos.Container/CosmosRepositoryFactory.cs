@@ -1,18 +1,19 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using EF.Core.Repositories.Test.Base;
 using Microsoft.EntityFrameworkCore;
 using System;
+using Testcontainers.CosmosDb;
 
-namespace EF.Core.Repositories.Test.Sql
+namespace EF.Core.Repositories.Test.Cosmos.Container
 {
-    internal class SqlRepositoryFactory<TContext> : RepositoryFactoryBase<TContext>
+    internal class CosmosRepositoryFactory<TContext> : RepositoryFactoryBase<TContext>
         where TContext : DbContext
     {
-        public SqlRepositoryFactory(SqlConnectionStringBuilder builder)
+        public CosmosRepositoryFactory(CosmosDbContainer host)
         {
             var id = Guid.NewGuid().ToString().ToLower().Replace('-', '.');
-            builder.InitialCatalog = $"{typeof(TContext).Name}.{id}";
+
             _options = new DbContextOptionsBuilder<TContext>()
-                .UseSqlServer(builder.ConnectionString)
+                .UseCosmos(host.GetConnectionString(), $"{typeof(TContext).Name}.{id}")
                 .Options;
         }
 

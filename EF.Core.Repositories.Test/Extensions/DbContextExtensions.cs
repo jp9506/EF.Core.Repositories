@@ -10,36 +10,6 @@ namespace EF.Core.Repositories.Test.Extensions
 {
     internal static class DbContextExtensions
     {
-        public static async Task DisableForeignKeyContraintsAsync(this DbContext context, CancellationToken cancellationToken = default) => await SetForeignKeyConstraintsAsync(context, false, cancellationToken);
-
-        public static async Task DisableIdentityInsertAsync(this DbContext context, IEntityType entityType, CancellationToken cancellationToken = default) => await SetIdentityInsertAsync(entityType, context, false, cancellationToken);
-
-        public static async Task EnableForeignKeyContraintsAsync(this DbContext context, CancellationToken cancellationToken = default) => await SetForeignKeyConstraintsAsync(context, true, cancellationToken);
-
-        public static async Task EnableIdentityInsertAsync(this DbContext context, IEntityType entityType, CancellationToken cancellationToken = default) => await SetIdentityInsertAsync(entityType, context, true, cancellationToken);
-
-        public static async Task InsertEntityAsync(this DbContext context, EntityEntry entity, CancellationToken cancellationToken = default)
-        {
-            var parameters =
-                entity.Properties
-                .Where(p => p.CurrentValue != null)
-                .Select((p, i) => new
-                {
-                    Column = p.Metadata.GetColumnName(),
-                    Index = i,
-                    Value = p.CurrentValue!,
-                })
-                .OrderBy(x => x.Index)
-                .ToArray();
-            var sql = $"INSERT INTO {entity.Metadata.GetSchemaQualifiedTableName()} " +
-                $"({string.Join(',', parameters.Select(p => p.Column))}) " +
-                $"VALUES ({string.Join(',', parameters.Select(p => $"@p{p.Index}"))})";
-            await context.Database.ExecuteSqlRawAsync(
-                sql,
-                parameters.Select(p => p.Value),
-                cancellationToken);
-        }
-
         public static async Task SeedDataAsync(this DbContext context, IEnumerable<object> entities, CancellationToken cancellationToken = default)
         {
             await context.AddRangeAsync(entities, cancellationToken);
@@ -63,12 +33,44 @@ namespace EF.Core.Repositories.Test.Extensions
             }
         }
 
+        private static async Task DisableForeignKeyContraintsAsync(this DbContext context, CancellationToken cancellationToken = default) => await SetForeignKeyConstraintsAsync(context, false, cancellationToken);
+
+        private static async Task DisableIdentityInsertAsync(this DbContext context, IEntityType entityType, CancellationToken cancellationToken = default) => await SetIdentityInsertAsync(entityType, context, false, cancellationToken);
+
+        private static async Task EnableForeignKeyContraintsAsync(this DbContext context, CancellationToken cancellationToken = default) => await SetForeignKeyConstraintsAsync(context, true, cancellationToken);
+
+        private static async Task EnableIdentityInsertAsync(this DbContext context, IEntityType entityType, CancellationToken cancellationToken = default) => await SetIdentityInsertAsync(entityType, context, true, cancellationToken);
+
+        private static async Task InsertEntityAsync(this DbContext context, EntityEntry entity, CancellationToken cancellationToken = default)
+        {
+            var parameters =
+                entity.Properties
+                .Where(p => p.CurrentValue != null)
+                .Select((p, i) => new
+                {
+                    Column = p.Metadata.GetColumnName(),
+                    Index = i,
+                    Value = p.CurrentValue!,
+                })
+                .OrderBy(x => x.Index)
+                .ToArray();
+            var sql = $"INSERT INTO {entity.Metadata.GetSchemaQualifiedTableName()} " +
+                $"({string.Join(',', parameters.Select(p => p.Column))}) " +
+                $"VALUES ({string.Join(',', parameters.Select(p => $"@p{p.Index}"))})";
+            await context.Database.ExecuteSqlRawAsync(
+                sql,
+                parameters.Select(p => p.Value),
+                cancellationToken);
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "EF1002:Risk of vulnerability to SQL injection.", Justification = "Script is safe from injection")]
         private static async Task SetForeignKeyConstraintsAsync(DbContext context, bool enable, CancellationToken cancellationToken)
         {
             var value = enable ? "CHECK" : "NOCHECK";
             await context.Database.ExecuteSqlRawAsync($"EXEC sp_MSforeachtable \"ALTER TABLE ? {value} CONSTRAINT ALL\"", cancellationToken);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "EF1002:Risk of vulnerability to SQL injection.", Justification = "Script is safe from injection")]
         private static async Task SetIdentityInsertAsync(IEntityType entityType, DbContext context, bool enable, CancellationToken cancellationToken)
         {
             var value = enable ? "ON" : "OFF";

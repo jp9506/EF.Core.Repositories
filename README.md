@@ -10,8 +10,8 @@ $ dotnet add package EF.Core.Repositories
 ```
 
 ## Requirements
-- .NET 7 or higher
-- Entity Framework Core 7.0.14+
+- .NET 8 or higher
+- Entity Framework Core 9.0.0 or higher
 
 ## Getting Started
 The Repository Factory can be registered by calling ConfigureData() extension.
@@ -49,10 +49,13 @@ public class Consumer
 ## Usage
 
 ### IReadOnlyRepository LINQ Extensions
-The majority of IQueryable Extensions are also available for IReadOnlyRepository.
+The majority of IQueryable Extensions are available.
+- AsSingleQuery()
+- AsSplitQuery()
 - Distinct()
 - Except()
 - GroupBy()
+- Include()
 - Intersect()
 - IntersectBy()
 - Join()
@@ -68,11 +71,24 @@ The majority of IQueryable Extensions are also available for IReadOnlyRepository
 - TakeWhile()
 - ThenBy()
 - ThenByDescending()
+- ThenInclude()
 - Union()
 - UnionBy()
 - Where()
 - Zip()
 
+#### Include() / ThenInclude()
+Just like when working with a DbSet exposed by a DbContext, you can include loading navigation properties of your entities.
+
+Ex. Retrieving all Users, their UserRoles, and the subsequent referenced Role
+```csharp
+var repository = _factory
+  .GetRepository<User>()
+  .Include(x => x.UserRoles)
+  .ThenInclude(x => x.Role);
+
+var users = await repository.GetAsync();
+```
 ### IReadOnlyRepository Async Extensions
 Additional Extensions that will enumerate the Repository against the DbContext.
 - AllAsync()
@@ -91,24 +107,6 @@ Additional Extensions that will enumerate the Repository against the DbContext.
 - SingleAsync()
 - SingleOrDefaultAsync()
 - SumAsync()
-
-### IRepository Extensions
-IRepository has all the extensions available to IReadOnlyRepository and adds the following.
-- Include()
-- ThenInclude()
-
-#### Include()
-Just like when working with a DbSet exposed by a DbContext, you can include loading navigation properties of your entities.
-
-Ex. Retrieving all Users, their UserRoles, and the subsequent referenced Role
-```csharp
-var repository = _factory
-  .GetRepository<User>()
-  .Include(x => x.UserRoles)
-  .ThenInclude(x => x.Role);
-
-var users = await repository.GetAsync();
-```
 
 ### IRepository Async Extensions
 IRepository has all the async extensions available to IReadOnlyRepository and adds the following.
@@ -193,16 +191,37 @@ await Task.WhenAll(
 var inserted = await transaction.CommitAsync();
 ```
 
-## Testing
-The EF.Core.Repositories.Test package can be used to facilitate testing.
+## Integration Testing
+The EF.Core.Repositories.Test packages can be used to facilitate testing.
 
 ### Supported Providers
-Currently there are three data providers supported.
+Currently there are six data providers supported.
+- Cosmos Container
+    - Utilizes the EntityFrameworkCore.Cosmos provider
+    - Uses Testcontainers.CosmosDb to create a Cosmos Db Docker Container Instance
+    - Each time CreateFactoryAsync() is called a new database in the Container Instance is created and seeded
+    - Sql Factories will automatically delete the created database when disposed.
+    - Failed tests will not trigger .Dispose() when factory is wrapped in a using context.
+        - This will cause that database to survive and be available to aid in debugging test failure.
 - InMemory
     - Utilizes the EntityFrameworkCore.InMemory provider
+- PostgreSQL Container
+    - Utilizes the Npgsql.EntityFrameworkCore.PostgreSQL provider
+    - Uses Testcontainers.PostgreSql to create a PostgreSQL Docker Container Instance
+    - Each time CreateFactoryAsync() is called a new database in the Container Instance is created and seeded
+    - Sql Factories will automatically delete the created database when disposed.
+    - Failed tests will not trigger .Dispose() when factory is wrapped in a using context.
+        - This will cause that database to survive and be available to aid in debugging test failure.
 - Sqlite
     - Utilizes the EntityFrameworkCore.Sqlite provider with in memory Sqlite instances
-- Sql (*Recommended*)
+- Sql Container
+    - Utilizes the EntityFrameworkCore.SqlServer provider
+    - Uses Testcontainers.MsSql to create a Sql Server Docker Container Instance
+    - Each time CreateFactoryAsync() is called a new database in the Container Instance is created and seeded
+    - Sql Factories will automatically delete the created database when disposed.
+    - Failed tests will not trigger .Dispose() when factory is wrapped in a using context.
+        - This will cause that database to survive and be available to aid in debugging test failure.
+- Sql Instance
     - Utilizes the EntityFrameworkCore.SqlServer provider
     - A connection string must be passed to the builder method for use during tests
         - Initial Catalog parameter will be ignored if included
@@ -214,21 +233,119 @@ Currently there are three data providers supported.
 
 ### FactoryBuilders
 Each provider has an IFactoryBuilder&lt;T&gt; which uses a seed function to specify all objects that should be stored in the data source when it is initialized.
+The seeding process will automatically determine how and where to store each entity provided by the seeding function based upon the provided context.
 
 Best practice is to initialize a builder in your constructor and then create a factory to start each test.  This will result in each test using its own data source.
 
-### Example
+### Examples
+
+#### Using a Docker Container
+Integration testing using a container is the recommended method as it does provide both an accurate representation of Database functionality and can be easily distributed.
+
+```csharp
+using EF.Core.Repositories.Extensions;
+using EF.Core.Repositories.Test.Extensions;
+
+public class MyTests
+{
+    private readonly IFactoryBuilder<MyContext> _builder;
+
+    public MyTests()
+    {
+        _builder = IFactoryBuilder<MyContext>.Instance()
+            .ConfigureContainerBuilder(b =>
+            {
+                // Optionally Configure Testcontainers Docker Container here
+                return b
+                    .WithPassword("DbPassword")
+                    .WithLabel("Test", "True")
+                    .WithName("ContainerImageName");
+            })
+            .WithSeed(() => new object[]
+            {
+                new User
+                {
+                    Id = 1,
+                    Name = "Test User",
+                    Email = "user@test.com",
+                }
+            });
+    }
+}
+```
+
+#### Using an InMemory Provider
+In Memory Providers often do not have all functionality of their full database counterparts. Usage may result in inaccurate test results.
+
+```csharp
+using EF.Core.Repositories.Extensions;
+using EF.Core.Repositories.Test.Extensions;
+
+public class MyTests
+{
+    private readonly IFactoryBuilder<MyContext> _builder;
+
+    public MyTests()
+    {
+        _builder = IFactoryBuilder<MyContext>.Instance()
+            .WithSeed(() => new object[]
+            {
+                new User
+                {
+                    Id = 1,
+                    Name = "Test User",
+                    Email = "user@test.com",
+                }
+            });
+    }
+}
+```
+
+#### Using a Sql Instance
+Utilizing a physical SQL Server Instance is preferred in situations where Docker Containers are not an option. A Connection String is required for SQL Instance testing.
+Only Server/Security Information needs to be provided, the initial catalog will be auto-generated for each test.
+User will need elevated permissions to Create and Delete Databases.
+
+```csharp
+using EF.Core.Repositories.Extensions;
+using EF.Core.Repositories.Test.Extensions;
+
+public class MyTests
+{
+    private readonly IFactoryBuilder<MyContext> _builder;
+
+    public MyTests()
+    {
+        _builder = IFactoryBuilder<MyContext>.Instance()
+            .WithConnectionString("Server=(local);Integrated Security=true;TrustServerCertificate=true")
+            .WithSeed(() => new object[]
+            {
+                new User
+                {
+                    Id = 1,
+                    Name = "Test User",
+                    Email = "user@test.com",
+                }
+            });
+    }
+}
+```
+
+#### Full Example Test Class
 Testing a UserController's Add/Update endpoints
 
 ```csharp
+using EF.Core.Repositories.Extensions;
+using EF.Core.Repositories.Test.Extensions;
+
 public class UserControllerTests
 {
     private readonly IFactoryBuilder<MyContext> _builder;
 
     public UserControllerTests()
     {
-        _builder = IFactoryBuilder<MyContext>.Sql("Server=(local);Integrated Security=true;TrustServerCertificate=true",
-            () => new object[]
+        _builder = IFactoryBuilder<MyContext>.Instance()
+            .WithSeed(() => new object[]
             {
                 new User
                 {

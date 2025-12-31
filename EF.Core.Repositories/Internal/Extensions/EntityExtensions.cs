@@ -27,7 +27,7 @@ namespace EF.Core.Repositories.Internal.Extensions
         }
 
         private static Dictionary<string, object?>? GetKeyValues<T>(this DbContext context, T entity)
-                    where T : class?
+            where T : class?
         {
             if (entity == null)
                 return null;

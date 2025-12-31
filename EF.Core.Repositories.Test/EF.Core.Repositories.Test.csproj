@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Authors>jp9506</Authors>
     <Title>EF.Core.Repositories.Test</Title>
-    <Version>1.1.1</Version>
+    <Version>1.2.0</Version>
     <PackageTags>Entity;Framework;Core;entity-framework-core;EF;Data;O/RM;EntityFramework;EntityFrameworkCore;EFCore;Repository;Test;Testing</PackageTags>
     <Description>
       Provides testing capabilities for EF.Core.Repositories.
@@ -20,20 +20,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\README.md" Link="README.md" Pack="true" PackagePath="\">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.14" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.14" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.14" />
     <ProjectReference Include="..\EF.Core.Repositories\EF.Core.Repositories.csproj" />
-    <PackageReference Include="DotNet.ReproducibleBuilds" Version="1.1.1">
+    <PackageReference Include="DotNet.ReproducibleBuilds" Version="1.2.39">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Testcontainers" Version="4.9.0" />
   </ItemGroup>
 
 </Project>

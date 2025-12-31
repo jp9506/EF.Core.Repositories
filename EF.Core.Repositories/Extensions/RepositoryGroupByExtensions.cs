@@ -123,22 +123,11 @@ namespace EF.Core.Repositories.Extensions
             return new GroupByRepository<TEntity, TKey, TElement>(repository, keySelector, elementSelector, comparer);
         }
 
-        private sealed class GroupByRepository<TEntity, TKey> : WrapperReadOnlyRepositoryBase<TEntity, IInternalReadOnlyRepository<TEntity>, IGrouping<TKey, TEntity>>
+        private sealed class GroupByRepository<TEntity, TKey>(IReadOnlyRepository<TEntity> source, Expression<Func<TEntity, TKey>> keySelector, IEqualityComparer<TKey>? comparer = null)
+            : WrapperReadOnlyRepositoryBase<TEntity, IInternalReadOnlyRepository<TEntity>, IGrouping<TKey, TEntity>>((IInternalReadOnlyRepository<TEntity>)source)
         {
-            private readonly IEqualityComparer<TKey>? _comparer;
-            private readonly Expression<Func<TEntity, TKey>> _keySelector;
-
-            public GroupByRepository(IReadOnlyRepository<TEntity> source, Expression<Func<TEntity, TKey>> keySelector) : base((IInternalReadOnlyRepository<TEntity>)source)
-            {
-                _comparer = null;
-                _keySelector = keySelector;
-            }
-
-            public GroupByRepository(IReadOnlyRepository<TEntity> source, Expression<Func<TEntity, TKey>> keySelector, IEqualityComparer<TKey>? comparer) : base((IInternalReadOnlyRepository<TEntity>)source)
-            {
-                _comparer = comparer;
-                _keySelector = keySelector;
-            }
+            private readonly IEqualityComparer<TKey>? _comparer = comparer;
+            private readonly Expression<Func<TEntity, TKey>> _keySelector = keySelector;
 
             public override IQueryable<IGrouping<TKey, TEntity>> EntityQuery(DbContext context)
             {
@@ -149,25 +138,12 @@ namespace EF.Core.Repositories.Extensions
             }
         }
 
-        private sealed class GroupByRepository<TEntity, TKey, TElement> : WrapperReadOnlyRepositoryBase<TEntity, IInternalReadOnlyRepository<TEntity>, IGrouping<TKey, TElement>>
+        private sealed class GroupByRepository<TEntity, TKey, TElement>(IReadOnlyRepository<TEntity> source, Expression<Func<TEntity, TKey>> keySelector, Expression<Func<TEntity, TElement>> elementSelector, IEqualityComparer<TKey>? comparer = null)
+            : WrapperReadOnlyRepositoryBase<TEntity, IInternalReadOnlyRepository<TEntity>, IGrouping<TKey, TElement>>((IInternalReadOnlyRepository<TEntity>)source)
         {
-            private readonly IEqualityComparer<TKey>? _comparer;
-            private readonly Expression<Func<TEntity, TElement>> _elementSelector;
-            private readonly Expression<Func<TEntity, TKey>> _keySelector;
-
-            public GroupByRepository(IReadOnlyRepository<TEntity> source, Expression<Func<TEntity, TKey>> keySelector, Expression<Func<TEntity, TElement>> elementSelector) : base((IInternalReadOnlyRepository<TEntity>)source)
-            {
-                _comparer = null;
-                _elementSelector = elementSelector;
-                _keySelector = keySelector;
-            }
-
-            public GroupByRepository(IReadOnlyRepository<TEntity> source, Expression<Func<TEntity, TKey>> keySelector, Expression<Func<TEntity, TElement>> elementSelector, IEqualityComparer<TKey>? comparer) : base((IInternalReadOnlyRepository<TEntity>)source)
-            {
-                _comparer = comparer;
-                _elementSelector = elementSelector;
-                _keySelector = keySelector;
-            }
+            private readonly IEqualityComparer<TKey>? _comparer = comparer;
+            private readonly Expression<Func<TEntity, TElement>> _elementSelector = elementSelector;
+            private readonly Expression<Func<TEntity, TKey>> _keySelector = keySelector;
 
             public override IQueryable<IGrouping<TKey, TElement>> EntityQuery(DbContext context)
             {

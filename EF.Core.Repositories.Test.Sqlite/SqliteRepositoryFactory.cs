@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.Sqlite;
+﻿using EF.Core.Repositories.Test.Base;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using System.Data.Common;
 

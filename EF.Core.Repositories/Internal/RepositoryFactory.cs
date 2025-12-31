@@ -4,16 +4,11 @@ using System.Threading.Tasks;
 
 namespace EF.Core.Repositories.Internal
 {
-    internal class RepositoryFactory<TContext> : IRepositoryFactory<TContext>
+    internal class RepositoryFactory<TContext>(IDbContextFactory<TContext> contextFactory) : IRepositoryFactory<TContext>
         where TContext : DbContext
     {
-        private readonly IDbContextFactory<TContext> _contextFactory;
+        private readonly IDbContextFactory<TContext> _contextFactory = contextFactory;
         private bool disposedValue;
-
-        public RepositoryFactory(IDbContextFactory<TContext> contextFactory)
-        {
-            _contextFactory = contextFactory;
-        }
 
         public void Dispose()
         {

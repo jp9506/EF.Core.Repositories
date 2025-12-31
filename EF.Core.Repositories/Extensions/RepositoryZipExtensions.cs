@@ -75,16 +75,10 @@ namespace EF.Core.Repositories.Extensions
             return new ZipRepository3<TFirst, TSecond, TThird>(source1, source2, source3);
         }
 
-        private sealed class ZipRepository<TFirst, TSecond> : WrapperReadOnlyRepositoryBase<TFirst, IInternalReadOnlyRepository<TFirst>, (TFirst First, TSecond Second)>
+        private sealed class ZipRepository<TFirst, TSecond>(IReadOnlyRepository<TFirst> source1, IReadOnlyRepository<TSecond> source2)
+            : WrapperReadOnlyRepositoryBase<TFirst, IInternalReadOnlyRepository<TFirst>, (TFirst First, TSecond Second)>((IInternalReadOnlyRepository<TFirst>)source1)
         {
-            private readonly IInternalReadOnlyRepository<TSecond> _internalSource2;
-
-            public ZipRepository(
-                IReadOnlyRepository<TFirst> source1,
-                IReadOnlyRepository<TSecond> source2) : base((IInternalReadOnlyRepository<TFirst>)source1)
-            {
-                _internalSource2 = (IInternalReadOnlyRepository<TSecond>)source2;
-            }
+            private readonly IInternalReadOnlyRepository<TSecond> _internalSource2 = (IInternalReadOnlyRepository<TSecond>)source2;
 
             public override IQueryable<(TFirst First, TSecond Second)> EntityQuery(DbContext context)
             {
@@ -92,19 +86,11 @@ namespace EF.Core.Repositories.Extensions
             }
         }
 
-        private sealed class ZipRepository<TFirst, TSecond, TResult> : WrapperReadOnlyRepositoryBase<TFirst, IInternalReadOnlyRepository<TFirst>, TResult>
+        private sealed class ZipRepository<TFirst, TSecond, TResult>(IReadOnlyRepository<TFirst> source1, IReadOnlyRepository<TSecond> source2, Expression<Func<TFirst, TSecond, TResult>> resultSelector)
+            : WrapperReadOnlyRepositoryBase<TFirst, IInternalReadOnlyRepository<TFirst>, TResult>((IInternalReadOnlyRepository<TFirst>)source1)
         {
-            private readonly IInternalReadOnlyRepository<TSecond> _internalSource2;
-            private readonly Expression<Func<TFirst, TSecond, TResult>> _resultSelector;
-
-            public ZipRepository(
-                IReadOnlyRepository<TFirst> source1,
-                IReadOnlyRepository<TSecond> source2,
-                Expression<Func<TFirst, TSecond, TResult>> resultSelector) : base((IInternalReadOnlyRepository<TFirst>)source1)
-            {
-                _internalSource2 = (IInternalReadOnlyRepository<TSecond>)source2;
-                _resultSelector = resultSelector;
-            }
+            private readonly IInternalReadOnlyRepository<TSecond> _internalSource2 = (IInternalReadOnlyRepository<TSecond>)source2;
+            private readonly Expression<Func<TFirst, TSecond, TResult>> _resultSelector = resultSelector;
 
             public override IQueryable<TResult> EntityQuery(DbContext context)
             {
@@ -112,19 +98,11 @@ namespace EF.Core.Repositories.Extensions
             }
         }
 
-        private sealed class ZipRepository3<TFirst, TSecond, TThird> : WrapperReadOnlyRepositoryBase<TFirst, IInternalReadOnlyRepository<TFirst>, (TFirst First, TSecond Second, TThird Third)>
+        private sealed class ZipRepository3<TFirst, TSecond, TThird>(IReadOnlyRepository<TFirst> source1, IReadOnlyRepository<TSecond> source2, IReadOnlyRepository<TThird> source3)
+            : WrapperReadOnlyRepositoryBase<TFirst, IInternalReadOnlyRepository<TFirst>, (TFirst First, TSecond Second, TThird Third)>((IInternalReadOnlyRepository<TFirst>)source1)
         {
-            private readonly IInternalReadOnlyRepository<TSecond> _internalSource2;
-            private readonly IInternalReadOnlyRepository<TThird> _internalSource3;
-
-            public ZipRepository3(
-                IReadOnlyRepository<TFirst> source1,
-                IReadOnlyRepository<TSecond> source2,
-                IReadOnlyRepository<TThird> source3) : base((IInternalReadOnlyRepository<TFirst>)source1)
-            {
-                _internalSource2 = (IInternalReadOnlyRepository<TSecond>)source2;
-                _internalSource3 = (IInternalReadOnlyRepository<TThird>)source3;
-            }
+            private readonly IInternalReadOnlyRepository<TSecond> _internalSource2 = (IInternalReadOnlyRepository<TSecond>)source2;
+            private readonly IInternalReadOnlyRepository<TThird> _internalSource3 = (IInternalReadOnlyRepository<TThird>)source3;
 
             public override IQueryable<(TFirst First, TSecond Second, TThird Third)> EntityQuery(DbContext context)
             {
