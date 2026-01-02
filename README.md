@@ -89,8 +89,8 @@ var repository = _factory
 
 var users = await repository.GetAsync();
 ```
-### IReadOnlyRepository Async Extensions
-Additional Extensions that will enumerate the Repository against the DbContext.
+### IRepository/IReadOnlyRepository Async Extensions
+Extensions for reading from the DbContext.
 - AllAsync()
 - AnyAsync()
 - AverageAsync()
@@ -99,6 +99,7 @@ Additional Extensions that will enumerate the Repository against the DbContext.
 - FirstOrDefaultAsync()
 - GetAsync()
   - *Returns an IEnumerable containing the entities of the Repository.*
+- GetAsync(key)
 - LastAsync()
 - LastOrDefaultAsync()
 - LongCountAsync()
@@ -108,11 +109,9 @@ Additional Extensions that will enumerate the Repository against the DbContext.
 - SingleOrDefaultAsync()
 - SumAsync()
 
-### IRepository Async Extensions
-IRepository has all the async extensions available to IReadOnlyRepository and adds the following.
+Additionally, IRepository adds the following extensions.
 - DeleteAsync(entity)
 - DeleteByIdAsync(key)
-- GetAsync(key)
 - InsertAsync(entity)
 - UpdateAsync(entity)
 
