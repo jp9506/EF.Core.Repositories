@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using EF.Core.Repositories.Internal.Extensions;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -221,6 +222,43 @@ namespace EF.Core.Repositories.Extensions
         /// </exception>
         public static async Task<IEnumerable<T>> GetAsync<T>(this IReadOnlyRepository<T> repository, CancellationToken cancellationToken = default)
             => await ((IInternalReadOnlyRepository<T>)repository).ExecuteAsync(async x => await x.ToArrayAsync(cancellationToken), cancellationToken);
+
+        /// <summary>
+        /// Retrieves an entity from an <see cref="IReadOnlyRepository{T}"/> based upon the specified key.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <paramref name="key"/> must be an object containing properties that match the primary
+        /// key structure of <typeparamref name="T"/>.
+        /// </para>
+        /// <para>For an entity whose primary key is a single column (Id). Use new { Id = ? }.</para>
+        /// <para>
+        /// For an entity whose primary key has multiple columns (Id1, Id2,...). Use new { Id1 = ?,
+        /// Id2 = ?,... }.
+        /// </para>
+        /// </remarks>
+        /// <typeparam name="T">The type of the elements of <paramref name="repository"/>.</typeparam>
+        /// <param name="repository">An <see cref="IReadOnlyRepository{T}"/> to retrieve an entity from.</param>
+        /// <param name="key">An object specifying all primary key fields.</param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> to observe while waiting for the task to complete.
+        /// </param>
+        /// <returns>
+        /// A task that represents the asynchronous operation. The task result contains the single
+        /// element matching the <paramref name="key"/> or <see langword="default"/> ( <typeparamref
+        /// name="T"/> ) if no such element is found.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="repository"/> or <paramref name="key"/> is <see langword="null"/>.
+        /// </exception>
+        /// <exception cref="InvalidOperationException">
+        /// More than one element matches <paramref name="key"/>.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">
+        /// If the <see cref="CancellationToken"/> is canceled.
+        /// </exception>
+        public static async Task<T?> GetAsync<T>(this IReadOnlyRepository<T> repository, object key, CancellationToken cancellationToken = default) where T : class
+            => await ((IInternalReadOnlyRepository<T>)repository).ExecuteAsync(async (r, ctx) => await r.GetAsync(ctx, key, cancellationToken), cancellationToken);
 
         #endregion Get
 
@@ -1543,6 +1581,12 @@ namespace EF.Core.Repositories.Extensions
         {
             var ctx = await repository.Transaction.GetDbContextAsync(cancellationToken);
             return await expression(repository.EntityQuery(ctx));
+        }
+
+        private static async Task<TResult> ExecuteAsync<T, TResult>(this IInternalReadOnlyRepository<T> repository, Func<IInternalReadOnlyRepository<T>, DbContext, Task<TResult>> expression, CancellationToken cancellationToken = default)
+        {
+            var ctx = await repository.Transaction.GetDbContextAsync(cancellationToken);
+            return await expression(repository, ctx);
         }
 
         #endregion Execute
