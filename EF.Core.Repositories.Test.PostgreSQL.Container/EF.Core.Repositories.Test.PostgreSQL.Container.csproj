@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <Authors>jp9506</Authors>
     <Title>EF.Core.Repositories.Test.PostgreSQL.Container</Title>
-    <Version>1.2.0</Version>
+    <Version>1.2.1</Version>
     <PackageTags>Entity;Framework;Core;entity-framework-core;EF;Data;O/RM;EntityFramework;EntityFrameworkCore;EFCore;Repository;Test;Testing</PackageTags>
     <Description>
       Provides testing capabilities for EF.Core.Repositories using a PostgreSQL Container.
