@@ -75,17 +75,36 @@ namespace EF.Core.Repositories.Test.Sql
                         Id = new Guid(x),
                         Name = $"User {i}",
                         SupervisorId = null,
+                        UserRoles =
+                        [
+                            new UserRole
+                            {
+                                Expiration = null,
+                                RoleId = 1,
+                                UserId = new Guid(x),
+                                Role = new Role
+                                {
+                                    Id = 1,
+                                    Name = "Admin",
+                                },
+                            }
+                        ],
                     })
-                    .Union(new[]
-                    {
-                        new User
+                    .Union(
+                    [
+                        (object)new User
                         {
                             Email = "test@test.com",
                             Id = new Guid(USER_ID),
                             Name = "Test Test",
                             SupervisorId = null,
-                        }
-                    }));
+                        },
+                        (object)new Role
+                        {
+                            Id = 1,
+                            Name = "Admin",
+                        },
+                    ]));
         }
 
         [Fact]
