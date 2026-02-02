@@ -55,7 +55,7 @@ namespace EF.Core.Repositories.Test.Extensions
                 .OrderBy(x => x.Index)
                 .ToArray();
             var sql = $"INSERT INTO {entity.Metadata.GetSchemaQualifiedTableName()} " +
-                $"({string.Join(',', parameters.Select(p => p.Column))}) " +
+                $"({string.Join(',', parameters.Select(p => $"[{p.Column}]"))}) " +
                 $"VALUES ({string.Join(',', parameters.Select(p => $"@p{p.Index}"))})";
             await context.Database.ExecuteSqlRawAsync(
                 sql,
