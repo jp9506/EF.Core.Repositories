@@ -75,9 +75,8 @@ namespace EF.Core.Repositories.Test.Extensions
         {
             var value = enable ? "ON" : "OFF";
             var hasIdentity = entityType
-                .FindPrimaryKey()?
-                .Properties
-                .Any(x => x.GetValueGenerationStrategy() == SqlServerValueGenerationStrategy.IdentityColumn) ?? false;
+                .GetProperties()
+                .Any(x => x.GetValueGenerationStrategy() == SqlServerValueGenerationStrategy.IdentityColumn);
             if (hasIdentity)
                 await context.Database.ExecuteSqlRawAsync($"SET IDENTITY_INSERT {entityType.GetSchemaQualifiedTableName()} {value}", cancellationToken);
         }
